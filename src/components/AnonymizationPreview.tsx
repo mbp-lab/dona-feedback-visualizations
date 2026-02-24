@@ -54,9 +54,7 @@ const AnonymizationPreview: React.FC<AnonymizationPreviewProps> = ({
   const [isModalOpen, setModalOpen] = React.useState(false);
   const [feedbackChats, setFeedbackChats] = useState<Set<string>>(() => {
     const sortedConversations = sortConversationsByWordCount(anonymizedConversations);
-    const defaultChats = sortedConversations
-      .slice(0, CONFIG.DEFAULT_FEEDBACK_CHATS)
-      .map(convo => convo.conversationPseudonym);
+    const defaultChats = sortedConversations.slice(0, CONFIG.DEFAULT_FEEDBACK_CHATS).map(convo => convo.conversationPseudonym);
     return new Set(defaultChats);
   });
 
@@ -105,11 +103,10 @@ const AnonymizationPreview: React.FC<AnonymizationPreviewProps> = ({
                 {donation.t("contactsMapping.feedback")}
               </ResponsiveTableCell>
               <ResponsiveTableCell>{donation.t("contactsMapping.pseudonyms")}</ResponsiveTableCell>
-              <ResponsiveTableCell>{donation.t("contactsMapping.contacts")}</ResponsiveTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {Array.from(chatMappingToShow.entries()).map(([chatPseudonym, chatParticipants]) => (
+            {Array.from(chatMappingToShow.entries()).map(([chatPseudonym]) => (
               <TableRow key={chatPseudonym} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
                 <ResponsiveTableCell padding="checkbox" sx={{ textAlign: "center" }}>
                   {chatPseudonym != aliasConfig.donorAlias && (
@@ -122,9 +119,6 @@ const AnonymizationPreview: React.FC<AnonymizationPreviewProps> = ({
                 </ResponsiveTableCell>
                 <ResponsiveTableCell component="th" scope="row">
                   {chatPseudonym}
-                </ResponsiveTableCell>
-                <ResponsiveTableCell>
-                  {chatParticipants.join(", ") || donation.rich("contactsMapping.onlyYouInConv")}
                 </ResponsiveTableCell>
               </TableRow>
             ))}
