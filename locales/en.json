@@ -673,6 +673,7 @@
       }
     },
     "thanks": "We hope you had exciting insights. Thanks a lot!",
+    "downloadPdf": "Download feedback as PDF",
     "buttons": {
       "nextButton": "Next",
       "finishButton": "Finish",

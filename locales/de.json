@@ -667,6 +667,7 @@
       }
     },
     "thanks": "Wir hoffen Sie hatten spannende Erkenntnisse. Danke sehr!",
+    "downloadPdf": "Feedback als PDF herunterladen",
     "buttons": {
       "nextButton": "Weiter",
       "finishButton": "Ende",

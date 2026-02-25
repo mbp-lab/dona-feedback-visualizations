@@ -676,7 +676,8 @@
       "completeSurvey": {
         "caption": "Լրացնել հարցաշարը"
       }
-    }
+    },
+    "downloadPdf": "Ներբեռնել արձագանքները որպես PDF"
   },
   "language": {
     "current": "Հայ",
