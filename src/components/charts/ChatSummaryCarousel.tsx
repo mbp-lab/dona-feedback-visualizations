@@ -55,7 +55,7 @@ export default function ChatSummaryCarousel({ data }: ChatSummaryCarouselProps) 
                             </ListItem>
                             <ListItem>
                                 <ListItemIcon><CheckCircleOutlineIcon color="primary" /></ListItemIcon>
-                                <ListItemText primary={`You had a ${summary.longestStreak} day texting "streak".`} />
+                                <ListItemText primary={`You had a ${summary.longestStreak} day texting streak.`} />
                             </ListItem>
                         </List>
                     </Box>

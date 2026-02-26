@@ -84,7 +84,7 @@ export default function GeneralInfoCarousel({ data }: GeneralInfoCarouselProps) 
                         in {data.basicStatistics.numberOfActiveMonths} months!
                     </Typography>
                     <Typography variant="body1" sx={{ mt: 2 }}>
-                        Stacking {sentMessages.toLocaleString()} standard postcards would make a pile about {floor(0.0005 * sentMessages)} meters tall.
+                        Stacking {sentMessages.toLocaleString()} postcards would make a pile about {floor(0.0005 * sentMessages)} meters tall.
                     </Typography>
                 </Box>
 
@@ -146,10 +146,10 @@ export default function GeneralInfoCarousel({ data }: GeneralInfoCarouselProps) 
                     </Typography>
                     <Typography variant="body1" paragraph>
                         On your peak texting day, {peakDay.date},
-                        you sent at least one message during:
+                        in each of the {peakDay.activeHours} hours of the day you were active,
                     </Typography>
-                    <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
-                        {peakDay.activeHours} hours of the day
+                    <Typography variant="body1" paragraph>
+                        sending at least one message,
                     </Typography>
                     <Typography variant="body1" paragraph>
                         exchanging {peakDay.totalMessagesExchanged} messages in total.
