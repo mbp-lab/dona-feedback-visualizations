@@ -91,10 +91,6 @@ export default function ComparisonCarousel({ data }: ComparisonCarouselProps) {
                         If this was a race, {raceWinnerName} would be the winner!
                     </Typography>
                     <ReplyTimeRace raceData={data.replyTimeRace} />
-                    <Typography sx={{ mt: 2, fontStyle: 'italic' }}>
-                        This shows the median time it takes for you to reply. A longer bar means a faster reply.
-                    </Typography>
-
                 </Box>
 
                 <Box key="animated-words" sx={chartSlideStyles}>

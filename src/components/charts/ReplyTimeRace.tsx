@@ -2,11 +2,14 @@ import React, { useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { ReplyTimeRacer } from '@models/graphData';
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
+import SmartphoneIcon from '@mui/icons-material/Smartphone';
 import DownloadButtons from "@components/charts/DownloadButtons";
 
 interface ReplyTimeRaceProps {
     raceData?: ReplyTimeRacer[];
 }
+
+const laneColors = ['#4CAF50', '#2196F3', '#FF9800', '#E91E63', '#9C27B0'];
 
 export default function ReplyTimeRace({ raceData }: ReplyTimeRaceProps) {
     const safeRaceData = raceData || [];
@@ -16,80 +19,98 @@ export default function ReplyTimeRace({ raceData }: ReplyTimeRaceProps) {
 
     const maxTime = useMemo(() => {
         if (!safeRaceData || safeRaceData.length === 0) return 1;
-        // add a small buffer to maxTime so the slowest person doesn't have a 0-length bar
-        return Math.max(...safeRaceData.map(r => r.avgReplyTimeMinutes)) * 1.1; 
+        return Math.max(...safeRaceData.map(r => r.avgReplyTimeMinutes)) * 1.1;
     }, [safeRaceData]);
 
     if (safeRaceData.length === 0) {
         return <Typography>Not enough data to show reply time comparison.</Typography>;
     }
-    
+
     return (
-        <Box 
-            id={CHART_ID} 
-            sx={{ 
-                width: '100%', 
-                height: '100%', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                justifyContent: 'center', 
+        <Box
+            id={CHART_ID}
+            sx={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
                 p: 2,
-                position: 'relative', // needed for absolute positioning
-                bgcolor: '#FFFFFF' 
+                position: 'relative',
+                bgcolor: '#FFFFFF'
             }}
         >
             <Box sx={{ position: 'absolute', top: 0, right: 0, zIndex: 100 }}>
                 <DownloadButtons chartId={CHART_ID} fileNamePrefix={FILE_NAME} />
             </Box>
 
-            <Box sx={{ 
-                flexGrow: 1, 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: '35px',
+            <Box sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
                 position: 'relative',
-                pl: '35px',
-                pt: '20px'
+                mt: 1,
             }}>
-                {/* start line */}
-                <Box sx={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: '30px',
-                    bgcolor: 'grey.700',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '4px',
-                }}>
-                    <Typography sx={{ transform: 'rotate(-90deg)', color: 'white', fontWeight: 'bold' }}>START</Typography>
-                </Box>
-                
                 {safeRaceData.map((racer, index) => {
-                    // normalized bar width logic
                     let normalizedTime = maxTime > 0 ? racer.avgReplyTimeMinutes / maxTime : 1;
-                    if (normalizedTime > 1) normalizedTime = 1; // cap at 100% in case of buffer
-                    const barWidth = (1 - normalizedTime) * 95 + 5; // scales results between 5% and 100% width
+                    if (normalizedTime > 1) normalizedTime = 1;
+                    const barWidth = (1 - normalizedTime) * 85 + 10;
+                    const color = laneColors[index % laneColors.length];
 
                     return (
-                        <Box key={index} sx={{ width: '100%' }}>
+                        <Box key={index}>
                             <Typography variant="body2" sx={{ fontWeight: 'bold', textAlign: 'left', mb: 0.5 }}>
                                 {racer.name}
                             </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                position: 'relative',
+                                height: 40,
+                                bgcolor: '#f0f0f0',
+                                borderRadius: 2,
+                                overflow: 'hidden',
+                            }}>
+                                {/* Track lane dashes */}
                                 <Box sx={{
-                                    height: '30px',
+                                    position: 'absolute',
+                                    top: 0,
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    borderBottom: '2px dashed #ddd',
+                                    borderTop: '2px dashed #ddd',
+                                    pointerEvents: 'none',
+                                }} />
+
+                                {/* Race bar */}
+                                <Box sx={{
+                                    height: '100%',
                                     width: `${barWidth}%`,
-                                    bgcolor: 'primary.main',
-                                    borderRadius: '4px',
+                                    background: `linear-gradient(90deg, ${color}44 0%, ${color} 100%)`,
+                                    borderRadius: 2,
                                     transition: 'width 0.6s ease-out',
-                                }}/>
-                                <DirectionsRunIcon sx={{ fontSize: '35px' }} />
-                                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                                    {racer.formattedTime}
-                                </Typography>
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'flex-end',
+                                    pr: 0.5,
+                                    position: 'relative',
+                                }}>
+                                    <DirectionsRunIcon sx={{ fontSize: 28, color: '#fff', filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.3))' }} />
+                                </Box>
+
+                                {/* Phone finish line */}
+                                <Box sx={{
+                                    position: 'absolute',
+                                    right: 8,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#555' }}>
+                                        {racer.formattedTime}
+                                    </Typography>
+                                    <SmartphoneIcon sx={{ fontSize: 22, color: '#333' }} />
+                                </Box>
                             </Box>
                         </Box>
                     );

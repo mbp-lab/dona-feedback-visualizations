@@ -52,16 +52,10 @@ export function produceReplyTimeRace(donorId: string, conversations: Conversatio
         let displayString = "";
 
         if (medianReplyTimeMs < 60000) {
-            const seconds = Math.round(medianReplyTimeMs / 1000);
-            
-            if (seconds < 1) {
-                displayString = "<1s"; 
-            } else {
-                displayString = `${seconds}s`;
-            }
+            displayString = "<1 min";
         } else {
             const mins = Math.round(medianReplyTimeMs / 60000);
-            displayString = `${mins} mins`;
+            displayString = `${mins} min${mins !== 1 ? "s" : ""}`;
         }
 
         // the original calculation for sorting/charts if needed
