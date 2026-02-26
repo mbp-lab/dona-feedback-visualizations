@@ -13,15 +13,22 @@ import ChartContainer, {ChartType} from "@components/charts/ChartContainer";
 import ChartExplanationModal from "@components/charts/ChartExplanationModal";
 import MoreChartsModal from "@components/charts/MoreChartsModal";
 import {DataSourceValue} from "@models/processed";
-import {GraphData} from "@models/graphData";
+import {DailyHourPoint, GraphData} from "@models/graphData";
 import GeneralInfoCarousel from '@components/charts/GeneralInfoCarousel';
 import ChatSummaryCarousel from "@components/charts/ChatSummaryCarousel";
 import ComparisonCarousel from "@components/charts/ComparisonCarousel";
+import EventComparisonChart from "@components/charts/EventComparisonChart";
 import FullSizeModal from "@components/FullSizeModal";
 import { MainTitle } from "@/styles/StyledTypography";
 
 
 type SectionName = "responseTimes" | "dailyActivityTimes" | "interactionIntensity";
+
+const toMessageData = (points: DailyHourPoint[]) =>
+    points.map(p => ({
+        dateTime: new Date(p.year, p.month - 1, p.date, p.hour, p.minute),
+        wordCount: p.wordCount,
+    }));
 
 export default function DataSourceFeedbackSection({ dataSourceValue, graphData }: { dataSourceValue: DataSourceValue; graphData: GraphData }) {
     const showDetailedAudioFeedback = [DataSourceValue.Facebook, DataSourceValue.Instagram].includes(dataSourceValue);
@@ -236,6 +243,20 @@ export default function DataSourceFeedbackSection({ dataSourceValue, graphData }
                 data={graphData}
                 dataSourceValue={dataSourceValue}
             />
+
+            {/* Event-Based Activity Analysis */}
+            <Typography variant="h6" sx={{ mt: 3 }}>Event-Based Activity Analysis</Typography>
+            <Box sx={{ textAlign: "left" }}>
+                <EventComparisonChart
+                    sentMessages={toMessageData(graphData.dailySentHours)}
+                    receivedMessages={toMessageData(graphData.dailyReceivedHours)}
+                    perChatSentMessages={graphData.dailySentHoursPerConversation.map((points, i) => ({
+                        chatName: graphData.focusConversations[i] ?? `Chat ${i + 1}`,
+                        messages: toMessageData(points),
+                    }))}
+                    defaultWindowDays={30}
+                />
+            </Box>
         </Stack>
     );
 
@@ -263,6 +284,19 @@ export default function DataSourceFeedbackSection({ dataSourceValue, graphData }
 
                     {/* Chat Summary Carousel */}
                     <ChatSummaryCarousel data={graphData} />
+
+                    {/* Event-Based Activity Analysis */}
+                    <Box sx={{ textAlign: "left", mt: 2 }}>
+                        <EventComparisonChart
+                            sentMessages={toMessageData(graphData.dailySentHours)}
+                            receivedMessages={toMessageData(graphData.dailyReceivedHours)}
+                            perChatSentMessages={graphData.dailySentHoursPerConversation.map((points, i) => ({
+                                chatName: graphData.focusConversations[i] ?? `Chat ${i + 1}`,
+                                messages: toMessageData(points),
+                            }))}
+                            defaultWindowDays={30}
+                        />
+                    </Box>
                     
                     <Button variant="contained" size="large" onClick={openScientificModal} sx={{ mt: 2, mb: 2 }}>
                         {t("moreScientificPlots")}
