@@ -1,10 +1,8 @@
 "use client";
 
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import CircularProgress from "@mui/material/CircularProgress";
 import Container from "@mui/material/Container";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -55,7 +53,8 @@ export default function DonationFeedbackPage() {
   }, [feedbackData, setDonationData]);
 
   const handleContinue = () => {
-    window.location.href = isFeedbackSurveyEnabled && feedbackSurveyLink ? `${feedbackSurveyLink}?UID=${externalDonorId}&lang=${locale}` : "/";
+    window.location.href =
+      isFeedbackSurveyEnabled && feedbackSurveyLink ? `${feedbackSurveyLink}?UID=${externalDonorId}&lang=${locale}` : "/";
   };
 
   const handleDownloadPdf = async () => {
@@ -94,6 +93,11 @@ export default function DonationFeedbackPage() {
         if (root) {
           save(root, { overflow: "visible", height: "auto" });
         }
+
+        const carouselBox = root?.parentElement;
+        if (carouselBox) {
+          save(carouselBox, { overflow: "visible" });
+        }
       });
 
       // 2) Hide carousel navigation bars (Back/Next buttons + dot indicators)
@@ -114,35 +118,47 @@ export default function DonationFeedbackPage() {
         hide(btn);
       });
 
-      // Wait for layout to settle after DOM changes
-      await new Promise(r => setTimeout(r, 200));
+      // 4) Reveal the hidden scientific charts so they appear in the PDF
+      element.querySelectorAll<HTMLElement>(".scientific-charts-pdf").forEach(section => {
+        save(section, { display: "block" });
+      });
 
-      // 4) Collect safe page-break points (DOM px relative to container top)
+      // Trigger resize so Chart.js instances render at their correct dimensions
+      window.dispatchEvent(new Event("resize"));
+
+      // Wait for layout to settle and charts to render
+      await new Promise(r => setTimeout(r, 1000));
+
+      // 5) Collect atomic blocks BEFORE capture (same DOM state toPng will clone)
       const containerRect = element.getBoundingClientRect();
-      const breakSet = new Set<number>();
-      breakSet.add(0);
+      const domHeight = element.scrollHeight;
+      const atomicBlocks: { top: number; bottom: number }[] = [];
 
-      element.querySelectorAll<HTMLElement>(".react-swipeable-view-container > div").forEach(slide => {
-        const r = slide.getBoundingClientRect();
-        breakSet.add(Math.round(r.top - containerRect.top));
-        breakSet.add(Math.round(r.bottom - containerRect.top));
+      const addBlock = (el: HTMLElement) => {
+        const r = el.getBoundingClientRect();
+        if (r.height > 0) {
+          atomicBlocks.push({
+            top: Math.round(r.top - containerRect.top),
+            bottom: Math.round(r.bottom - containerRect.top)
+          });
+        }
+      };
+
+      element.querySelectorAll<HTMLElement>(".react-swipeable-view-container > div").forEach(addBlock);
+      element.querySelectorAll<HTMLElement>(".MuiAlert-root").forEach(addBlock);
+      element.querySelectorAll<HTMLElement>(".MuiCard-root").forEach(addBlock);
+      element.querySelectorAll<HTMLElement>(".scientific-charts-pdf .MuiStack-root > *").forEach(el => {
+        if (el.getBoundingClientRect().height > 30) addBlock(el);
       });
 
-      element.querySelectorAll<HTMLElement>(".MuiAlert-root, .MuiAccordion-root").forEach(block => {
-        const r = block.getBoundingClientRect();
-        breakSet.add(Math.round(r.top - containerRect.top));
-        breakSet.add(Math.round(r.bottom - containerRect.top));
-      });
+      atomicBlocks.sort((a, b) => a.top - b.top);
 
-      const breakPoints = [...breakSet].sort((a, b) => a - b);
-
-      // 5) Capture the full expanded content as a high-res PNG
+      // 6) Capture the full expanded content as a high-res PNG
       const pixelRatio = 2;
       const dataUrl = await toPng(element, {
         backgroundColor: "#ffffff",
         pixelRatio,
-        filter: (node: HTMLElement) =>
-          !node.classList?.contains("download-buttons") && !node.classList?.contains("export-hidden")
+        filter: (node: HTMLElement) => !node.classList?.contains("download-buttons") && !node.classList?.contains("export-hidden")
       });
 
       const img = new Image();
@@ -152,49 +168,70 @@ export default function DonationFeedbackPage() {
         img.onerror = reject;
       });
 
-      // 6) Build multi-page PDF, slicing only at block boundaries
+      // Proportional mapping from DOM-Y to image-Y to handle any height drift
+      const domToImg = img.height / domHeight;
+
+      // 7) Build multi-page PDF, never splitting an atomic block
       const pdfWidthMm = 210;
       const marginMm = 10;
       const contentWidthMm = pdfWidthMm - 2 * marginMm;
-      const scale = contentWidthMm / img.width;
+      const scaleMm = contentWidthMm / img.width;
 
       const pdf = new jsPDF("p", "mm", "a4");
       const pageHeightMm = pdf.internal.pageSize.getHeight() - 2 * marginMm;
-      const pageHeightDom = pageHeightMm / scale / pixelRatio;
+      const pageHeightDom = (pageHeightMm * containerRect.width) / contentWidthMm;
+      const BUFFER = 20;
 
-      const totalHeightDom = Math.round(element.scrollHeight);
       let currentY = 0;
       let pageNum = 0;
 
-      while (currentY < totalHeightDom - 1) {
+      while (currentY < domHeight - 1) {
         if (pageNum > 0) pdf.addPage();
 
         const maxY = currentY + pageHeightDom;
+        let cutAt = Math.min(maxY, domHeight);
 
-        // Find the last safe break point that fits on this page
-        let bestBreak = currentY;
-        for (const bp of breakPoints) {
-          if (bp > currentY && bp <= maxY) bestBreak = bp;
-          if (bp > maxY) break;
+        // Pass 1: push cutAt before any block whose bottom extends beyond the page
+        for (const block of atomicBlocks) {
+          if (block.bottom <= currentY) continue;
+          if (block.top >= cutAt) continue;
+          if (block.bottom > maxY - BUFFER && block.top > currentY) {
+            cutAt = Math.min(cutAt, block.top);
+          }
         }
 
-        if (bestBreak <= currentY) {
-          bestBreak = Math.min(maxY, totalHeightDom);
+        // Pass 2: keep pushing cutAt earlier if it lands inside any block
+        let settled = false;
+        while (!settled) {
+          settled = true;
+          for (const block of atomicBlocks) {
+            if (block.top >= cutAt) break;
+            if (block.bottom <= currentY) continue;
+            if (block.top < cutAt && block.bottom > cutAt && block.top > currentY) {
+              cutAt = block.top;
+              settled = false;
+              break;
+            }
+          }
         }
 
-        const srcY = Math.round(currentY * pixelRatio);
-        const sliceH = Math.round((bestBreak - currentY) * pixelRatio);
+        if (cutAt <= currentY) cutAt = Math.min(maxY, domHeight);
+
+        // Map DOM coordinates to image coordinates via proportional scale
+        const imgY0 = Math.round(currentY * domToImg);
+        const imgY1 = Math.round(cutAt * domToImg);
+        const sliceH = imgY1 - imgY0;
         if (sliceH <= 0) break;
 
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = sliceH;
         const ctx = canvas.getContext("2d")!;
-        ctx.drawImage(img, 0, srcY, img.width, sliceH, 0, 0, img.width, sliceH);
+        ctx.drawImage(img, 0, imgY0, img.width, sliceH, 0, 0, img.width, sliceH);
 
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", marginMm, marginMm, contentWidthMm, sliceH * scale);
+        pdf.addImage(canvas.toDataURL("image/png"), "PNG", marginMm, marginMm, contentWidthMm, sliceH * scaleMm);
 
-        currentY = bestBreak;
+        currentY = cutAt;
         pageNum++;
       }
 
@@ -253,26 +290,22 @@ export default function DonationFeedbackPage() {
 
               <Box sx={{ width: "100%", textAlign: "left" }}>
                 {Object.entries(feedbackData).map(([source, data]) => (
-                  <DataSourceFeedbackSection key={source} dataSourceValue={source as DataSourceValue} graphData={data} />
+                  <DataSourceFeedbackSection
+                    key={source}
+                    dataSourceValue={source as DataSourceValue}
+                    graphData={data}
+                    onDownloadPdf={handleDownloadPdf}
+                    isGeneratingPdf={isGeneratingPdf}
+                  />
                 ))}
               </Box>
 
               <RichText sx={{ py: 2, textAlign: "center" }}>{feedback.t("thanks")}</RichText>
             </Box>
 
-            <Stack spacing={2} direction="row" sx={{ justifyContent: "center", mt: 2 }}>
-              <Button
-                variant="outlined"
-                startIcon={isGeneratingPdf ? <CircularProgress size={20} /> : <PictureAsPdfIcon />}
-                onClick={handleDownloadPdf}
-                disabled={isGeneratingPdf}
-              >
-                {feedback.t("downloadPdf")}
-              </Button>
-              <Button variant="contained" onClick={handleContinue}>
-                {actions("next")}
-              </Button>
-            </Stack>
+            <Button variant="contained" onClick={handleContinue} sx={{ mt: 2 }}>
+              {actions("next")}
+            </Button>
           </>
         )}
       </Stack>

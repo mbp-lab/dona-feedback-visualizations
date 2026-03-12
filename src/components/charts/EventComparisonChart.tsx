@@ -11,22 +11,13 @@ import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useTheme } from "@mui/material/styles";
-import {
-  CategoryScale,
-  Chart as ChartJS,
-  Legend,
-  LinearScale,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Filler
-} from "chart.js";
+import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip, Filler } from "chart.js";
 import { useState, useMemo } from "react";
 import { Line } from "react-chartjs-2";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
+import { CHART_COLORS } from "@components/charts/chartConfig";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
@@ -108,9 +99,7 @@ const EventComparisonChart: React.FC<EventComparisonProps> = ({
       });
 
       const mostActiveDay =
-        messagesByDay.size > 0
-          ? [...messagesByDay.entries()].reduce((max, curr) => (curr[1] > max[1] ? curr : max))[0]
-          : "N/A";
+        messagesByDay.size > 0 ? [...messagesByDay.entries()].reduce((max, curr) => (curr[1] > max[1] ? curr : max))[0] : "N/A";
 
       return { totalMessages, avgMessagesPerDay, avgWordCount, totalWords, mostActiveDay, messagesPerDay: messagesByDay };
     };
@@ -155,8 +144,8 @@ const EventComparisonChart: React.FC<EventComparisonProps> = ({
       {
         label: selectedChat === ALL_CHATS ? "Sent Messages" : `Sent – ${selectedChat}`,
         data: sentCounts,
-        borderColor: theme.palette.primary.main,
-        backgroundColor: `${theme.palette.primary.main}20`,
+        borderColor: CHART_COLORS.primary,
+        backgroundColor: CHART_COLORS.primaryTransparent,
         tension: 0.4,
         fill: true,
         pointRadius: 2,
@@ -166,16 +155,14 @@ const EventComparisonChart: React.FC<EventComparisonProps> = ({
 
     if (showReceived && beforeReceived && afterReceived) {
       const recvByDay = new Map<string, number>();
-      [beforeReceived, afterReceived].forEach(m =>
-        m.messagesPerDay.forEach((v, k) => recvByDay.set(k, (recvByDay.get(k) || 0) + v))
-      );
+      [beforeReceived, afterReceived].forEach(m => m.messagesPerDay.forEach((v, k) => recvByDay.set(k, (recvByDay.get(k) || 0) + v)));
       const recvCounts = allDates.map(date => recvByDay.get(date) || 0);
 
       datasets.push({
         label: "Received Messages",
         data: recvCounts,
-        borderColor: theme.palette.secondary.main,
-        backgroundColor: `${theme.palette.secondary.main}20`,
+        borderColor: CHART_COLORS.secondary,
+        backgroundColor: CHART_COLORS.secondaryTransparent,
         tension: 0.4,
         fill: true,
         pointRadius: 2,
@@ -232,14 +219,14 @@ const EventComparisonChart: React.FC<EventComparisonProps> = ({
             {title}
           </Typography>
           <Box sx={{ display: "flex", alignItems: "baseline", gap: 1, mb: 1 }}>
-            <Typography variant="h6" color="info.main">
+            <Typography variant="h6" sx={{ color: CHART_COLORS.primary }}>
               {before.toFixed(1)}
               {unit}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               →
             </Typography>
-            <Typography variant="h6" color="secondary.main">
+            <Typography variant="h6" sx={{ color: CHART_COLORS.secondary }}>
               {after.toFixed(1)}
               {unit}
             </Typography>
@@ -296,11 +283,7 @@ const EventComparisonChart: React.FC<EventComparisonProps> = ({
             <Grid size={{ xs: 12, sm: 4 }}>
               <FormControl fullWidth>
                 <InputLabel>Chat filter (sent only)</InputLabel>
-                <Select
-                  value={selectedChat}
-                  label="Chat filter (sent only)"
-                  onChange={e => setSelectedChat(e.target.value)}
-                >
+                <Select value={selectedChat} label="Chat filter (sent only)" onChange={e => setSelectedChat(e.target.value)}>
                   <MenuItem value={ALL_CHATS}>All chats (sent + received)</MenuItem>
                   {perChatSentMessages.map(chat => (
                     <MenuItem key={chat.chatName} value={chat.chatName}>
