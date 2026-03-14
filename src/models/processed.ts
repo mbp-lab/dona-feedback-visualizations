@@ -47,8 +47,30 @@ export interface Conversation {
   conversationHash?: string | null;
 }
 
+export interface Post {
+  wordCount: number;
+  mediaCount: number;
+  timestampMs: number;
+  dataSource: string;
+}
+
+export interface Comment {
+  wordCount: number;
+  timestampMs: number;
+  dataSource: string;
+}
+
+export interface Reaction {
+  reactionType: string;
+  timestampMs: number;
+  dataSource: string;
+}
+
 export interface AnonymizationResult {
   anonymizedConversations: Conversation[];
+  posts: Post[];
+  comments: Comment[];
+  reactions: Reaction[];
   participantNamesToPseudonyms: Record<string, string>;
   chatMappingToShow: ChatMapping;
 }

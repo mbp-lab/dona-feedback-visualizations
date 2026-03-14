@@ -56,7 +56,12 @@ const extractDonorNameFromInstagramProfile = (profileText: string): string => {
   throw DonationValidationError(DonationErrors.NoDonorNameFound);
 };
 
-async function handleMetaZipFiles(fileList: File[], profileInfoFilePattern: string, userNameExtractor: (profileText: string) => string, dataSourceValue: DataSourceValue): Promise<AnonymizationResult> {
+async function handleMetaZipFiles(
+  fileList: File[],
+  profileInfoFilePattern: string,
+  userNameExtractor: (profileText: string) => string,
+  dataSourceValue: DataSourceValue
+): Promise<AnonymizationResult> {
   const allEntries: ValidEntry[] = await extractEntriesFromZips(fileList);
 
   // Check for the presence of profile information
@@ -73,6 +78,26 @@ async function handleMetaZipFiles(fileList: File[], profileInfoFilePattern: stri
   const audioEntries = allEntries.filter(entry => isMatchingEntry(entry, ".wav"));
   console.log("Audio entries found:", audioEntries.length);
 
+  // Filter for post entries (exclude past_instagram_insights/posts.json)
+  const postEntries = allEntries.filter(
+    entry =>
+      !isMatchingEntry(entry, "past_instagram_insights/posts.json") &&
+      (isMatchingEntry(entry, "/posts_1.json") || isMatchingEntry(entry, "/posts.json"))
+  );
+  console.log("Post entries found:", postEntries.length);
+
+  // Filter for comment entries
+  const commentEntries = allEntries.filter(
+    entry => isMatchingEntry(entry, "post_comments_1.json") || isMatchingEntry(entry, "post_comments.json")
+  );
+  console.log("Comment entries found:", commentEntries.length);
+
+  // Filter for reaction/like entries
+  const reactionEntries = allEntries.filter(
+    entry => isMatchingEntry(entry, "liked_comments.json") || isMatchingEntry(entry, "liked_posts.json")
+  );
+  console.log("Reaction entries found:", reactionEntries.length);
+
   try {
     // Extract donor name from profile
     const donorName = userNameExtractor(await getEntryText(profileInfoEntry));
@@ -80,8 +105,13 @@ async function handleMetaZipFiles(fileList: File[], profileInfoFilePattern: stri
     // Extract message contents from message entries
     const parsedConversations = await getConversationsFromEntries(messageEntries);
 
+    // Read raw content for posts, comments, reactions
+    const rawPosts = await Promise.all(postEntries.map(getEntryText));
+    const rawComments = await Promise.all(commentEntries.map(getEntryText));
+    const rawReactions = await Promise.all(reactionEntries.map(getEntryText));
+
     // Process the extracted data
-    return deIdentify(parsedConversations, audioEntries, donorName, dataSourceValue);
+    return deIdentify(parsedConversations, audioEntries, donorName, dataSourceValue, rawPosts, rawComments, rawReactions);
   } catch (error) {
     throw DonationValidationError(DonationErrors.UnknownError);
   }

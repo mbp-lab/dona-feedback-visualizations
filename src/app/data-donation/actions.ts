@@ -4,10 +4,20 @@ import { eq } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 
 import { db } from "@/db/drizzle";
-import { conversationParticipants, conversations, donations, graphData, messages, messagesAudio } from "@/db/schema";
+import {
+  comments,
+  conversationParticipants,
+  conversations,
+  donations,
+  graphData,
+  messages,
+  messagesAudio,
+  posts,
+  reactions
+} from "@/db/schema";
 import { DbClient } from "@/db/types";
-import { NewConversation, NewMessage, NewMessageAudio } from "@models/persisted";
-import { Conversation, DonationStatus } from "@models/processed";
+import { NewComment, NewConversation, NewMessage, NewMessageAudio, NewPost, NewReaction } from "@models/persisted";
+import { Comment, Conversation, DonationStatus, Post, Reaction } from "@models/processed";
 import { DonationStats } from "@services/donationStats";
 import { DonationErrors, DonationProcessingError, SerializedDonationError } from "@services/errors";
 
@@ -208,6 +218,64 @@ export async function appendConversationBatch(
     return { success: true };
   } catch (err) {
     console.error(`[DONATION][donorId=${donorId}][donationId=${donationId}] ❌ appendConversationBatch:`, {
+      error: err,
+      stack: (err as any)?.stack
+    });
+    return {
+      success: false,
+      error: DonationProcessingError(DonationErrors.TransactionFailed, { originalError: err })
+    };
+  }
+}
+
+export async function appendContentData(
+  donationId: string,
+  postItems: Post[],
+  commentItems: Comment[],
+  reactionItems: Reaction[],
+  dbClient: DbClient = db
+): Promise<ActionResult> {
+  console.log(
+    `[DONATION][donationId=${donationId}] appendContentData: ${postItems.length} posts, ${commentItems.length} comments, ${reactionItems.length} reactions`
+  );
+
+  try {
+    const dataSources = (await dbClient.query.dataSources.findMany()) as any;
+
+    const resolveDataSourceId = (dataSource: string): number =>
+      dataSources.find((ds: any) => ds.name === dataSource)?.id ?? dataSources[0].id;
+
+    // Insert posts
+    if (postItems.length > 0) {
+      const postsToInsert = postItems.map(p => NewPost.create(donationId, resolveDataSourceId(p.dataSource), p));
+      for (let i = 0; i < postsToInsert.length; i += BULK_CHUNK) {
+        const chunk = postsToInsert.slice(i, i + BULK_CHUNK);
+        await dbClient.insert(posts).values(chunk);
+      }
+    }
+
+    // Insert comments
+    if (commentItems.length > 0) {
+      const commentsToInsert = commentItems.map(c => NewComment.create(donationId, resolveDataSourceId(c.dataSource), c));
+      for (let i = 0; i < commentsToInsert.length; i += BULK_CHUNK) {
+        const chunk = commentsToInsert.slice(i, i + BULK_CHUNK);
+        await dbClient.insert(comments).values(chunk);
+      }
+    }
+
+    // Insert reactions
+    if (reactionItems.length > 0) {
+      const reactionsToInsert = reactionItems.map(r => NewReaction.create(donationId, resolveDataSourceId(r.dataSource), r));
+      for (let i = 0; i < reactionsToInsert.length; i += BULK_CHUNK) {
+        const chunk = reactionsToInsert.slice(i, i + BULK_CHUNK);
+        await dbClient.insert(reactions).values(chunk);
+      }
+    }
+
+    console.log(`[DONATION][donationId=${donationId}] ✅ appendContentData`);
+    return { success: true };
+  } catch (err) {
+    console.error(`[DONATION][donationId=${donationId}] ❌ appendContentData:`, {
       error: err,
       stack: (err as any)?.stack
     });

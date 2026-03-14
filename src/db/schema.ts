@@ -71,6 +71,49 @@ export const messagesAudio = p.pgTable("messages_audio", {
     .references(() => conversations.id)
 });
 
+export const posts = p.pgTable("posts", {
+  id: p.uuid("id").defaultRandom().primaryKey(),
+  donationId: p
+    .uuid("donation_id")
+    .notNull()
+    .references(() => donations.id),
+  dataSourceId: p
+    .integer("data_source_id")
+    .notNull()
+    .references(() => dataSources.id),
+  wordCount: p.integer("word_count").notNull(),
+  mediaCount: p.integer("media_count").notNull(),
+  dateTime: p.timestamp("datetime").notNull()
+});
+
+export const comments = p.pgTable("comments", {
+  id: p.uuid("id").defaultRandom().primaryKey(),
+  donationId: p
+    .uuid("donation_id")
+    .notNull()
+    .references(() => donations.id),
+  dataSourceId: p
+    .integer("data_source_id")
+    .notNull()
+    .references(() => dataSources.id),
+  wordCount: p.integer("word_count").notNull(),
+  dateTime: p.timestamp("datetime").notNull()
+});
+
+export const reactions = p.pgTable("reactions", {
+  id: p.uuid("id").defaultRandom().primaryKey(),
+  donationId: p
+    .uuid("donation_id")
+    .notNull()
+    .references(() => donations.id),
+  dataSourceId: p
+    .integer("data_source_id")
+    .notNull()
+    .references(() => dataSources.id),
+  reactionType: p.text("reaction_type").notNull(),
+  dateTime: p.timestamp("datetime").notNull()
+});
+
 export const graphData = p.pgTable("graph_data", {
   id: p.uuid("id").defaultRandom().primaryKey(),
   donationId: p
@@ -82,7 +125,10 @@ export const graphData = p.pgTable("graph_data", {
 });
 
 export const donationsRelations = relations(donations, ({ many }) => ({
-  conversations: many(conversations)
+  conversations: many(conversations),
+  posts: many(posts),
+  comments: many(comments),
+  reactions: many(reactions)
 }));
 
 export const dataSourcesRelations = relations(dataSources, ({ many }) => ({
@@ -121,6 +167,39 @@ export const messagesAudioRelations = relations(messagesAudio, ({ one }) => ({
   conversation: one(conversations, {
     fields: [messagesAudio.conversationId],
     references: [conversations.id]
+  })
+}));
+
+export const postsRelations = relations(posts, ({ one }) => ({
+  donation: one(donations, {
+    fields: [posts.donationId],
+    references: [donations.id]
+  }),
+  dataSource: one(dataSources, {
+    fields: [posts.dataSourceId],
+    references: [dataSources.id]
+  })
+}));
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  donation: one(donations, {
+    fields: [comments.donationId],
+    references: [donations.id]
+  }),
+  dataSource: one(dataSources, {
+    fields: [comments.dataSourceId],
+    references: [dataSources.id]
+  })
+}));
+
+export const reactionsRelations = relations(reactions, ({ one }) => ({
+  donation: one(donations, {
+    fields: [reactions.donationId],
+    references: [donations.id]
+  }),
+  dataSource: one(dataSources, {
+    fields: [reactions.dataSourceId],
+    references: [dataSources.id]
   })
 }));
 

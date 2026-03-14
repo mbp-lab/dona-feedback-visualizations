@@ -66,41 +66,63 @@ export interface BasicStatistics {
 }
 
 export interface ChatSummary {
-    chatName: string;
-    donorSentMessages: number;
-    donorSentWords: number;
-    quickReplyPercentage: number;
-    longestStreak: number;
+  chatName: string;
+  donorSentMessages: number;
+  donorSentWords: number;
+  quickReplyPercentage: number;
+  longestStreak: number;
 }
 
 export interface ActivityStats {
-    activeDays: number;
-    totalDays: number;
-    activityPercentage: number;
+  activeDays: number;
+  totalDays: number;
+  activityPercentage: number;
 }
 
 export interface PeakDayStats {
-    date: string;
-    activeHours: number;
-    totalMessagesExchanged: number;
-    topChat: string;
+  date: string;
+  activeHours: number;
+  totalMessagesExchanged: number;
+  topChat: string;
 }
 
 export interface GeneralInfoStats {
-    avgWordsPerSentMessage: number;
-    activityStats: ActivityStats;
-    peakDayStats: PeakDayStats;
+  avgWordsPerSentMessage: number;
+  activityStats: ActivityStats;
+  peakDayStats: PeakDayStats;
 }
 
 export interface PodiumContact {
-    name: string;
-    messageCount: number;
-    rank: number; // 1, 2 or 3
+  name: string;
+  messageCount: number;
+  rank: number; // 1, 2 or 3
 }
 export interface ReplyTimeRacer {
-    name: string;
-    avgReplyTimeMinutes: number;
-    formattedTime: string;
+  name: string;
+  avgReplyTimeMinutes: number;
+  formattedTime: string;
+}
+
+export interface PostStats {
+  totalPosts: number;
+  totalWords: number;
+  totalMedia: number;
+  avgWordsPerPost: number;
+  avgMediaPerPost: number;
+  postsOverTime: DailySentReceivedPoint[];
+}
+
+export interface CommentStats {
+  totalComments: number;
+  totalWords: number;
+  avgWordsPerComment: number;
+  commentsOverTime: DailySentReceivedPoint[];
+}
+
+export interface ReactionStats {
+  totalReactions: number;
+  reactionTypeBreakdown: Record<string, number>;
+  reactionsOverTime: DailySentReceivedPoint[];
 }
 
 export interface GraphData {
@@ -125,4 +147,7 @@ export interface GraphData {
   chatSummaries: ChatSummary[];
   topContactsPodium: PodiumContact[];
   replyTimeRace: ReplyTimeRacer[];
+  postStats?: PostStats;
+  commentStats?: CommentStats;
+  reactionStats?: ReactionStats;
 }

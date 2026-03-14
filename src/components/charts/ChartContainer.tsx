@@ -7,11 +7,16 @@ import AnimatedDayPartsActivityChart from "@components/charts/AnimatedDayPartsAc
 import AnimatedIntensityPolarChart from "@components/charts/AnimatedIntensityPolarChart";
 import AnimatedResponseTimeBarChart from "@components/charts/AnimatedResponseTimeBarChart";
 import AudioLengthsBarChart from "@components/charts/AudioLengthsBarChart";
+import CommentActivityChart from "@components/charts/CommentActivityChart";
 import CountsOverallBarChart from "@components/charts/CountsOverallBarChart";
 import DailyActivityChart from "@components/charts/DailyActivityChart";
 import DayPartsActivityOverallChart from "@components/charts/DayPartsActivityOverallChart";
 import EmojiBarChart from "@components/charts/EmojiBarChart";
+import EngagementStyleChart from "@components/charts/EngagementStyleChart";
 import MessageTypesBarChart from "@components/charts/MessageTypesBarChart";
+import PostActivityChart from "@components/charts/PostActivityChart";
+import ReactionBreakdownChart from "@components/charts/ReactionBreakdownChart";
+import SocialEngagementTimelineChart from "@components/charts/SocialEngagementTimelineChart";
 import ResponseTimeBarChart from "@components/charts/ResponseTimeBarChart";
 import SentReceivedSlidingWindowChart from "@components/charts/SentReceivedSlidingWindowChart";
 import { GraphData } from "@models/graphData";
@@ -32,7 +37,12 @@ export enum ChartType {
   AnimatedResponseTimeBarChart = "animatedResponseTimeBarChart",
   DailyActivityHoursChart = "dailyActivityHoursChart",
   DayPartsActivityOverallChart = "dayPartsActivityOverallChart",
-  AnimatedDayPartsActivityChart = "animatedDayPartsActivityChart"
+  AnimatedDayPartsActivityChart = "animatedDayPartsActivityChart",
+  PostActivityChart = "postActivityChart",
+  CommentActivityChart = "commentActivityChart",
+  ReactionBreakdownChart = "reactionBreakdownChart",
+  SocialEngagementTimelineChart = "socialEngagementTimelineChart",
+  EngagementStyleChart = "engagementStyleChart"
 }
 
 interface ChartContainerProps {
@@ -66,9 +76,21 @@ export default function ChartContainer({ type, data }: ChartContainerProps) {
 
       // Aggregated data only
       case ChartType.WordCountOverallBarChart:
-        return <CountsOverallBarChart sentWordsTotal={data.basicStatistics.wordsTotal.sent} receivedWordsTotal={data.basicStatistics.wordsTotal.received} mode="text" />;
+        return (
+          <CountsOverallBarChart
+            sentWordsTotal={data.basicStatistics.wordsTotal.sent}
+            receivedWordsTotal={data.basicStatistics.wordsTotal.received}
+            mode="text"
+          />
+        );
       case ChartType.SecondCountOverallBarChart:
-        return <CountsOverallBarChart sentWordsTotal={data.basicStatistics.secondsTotal.sent} receivedWordsTotal={data.basicStatistics.secondsTotal.received} mode="audio" />;
+        return (
+          <CountsOverallBarChart
+            sentWordsTotal={data.basicStatistics.secondsTotal.sent}
+            receivedWordsTotal={data.basicStatistics.secondsTotal.received}
+            mode="audio"
+          />
+        );
       case ChartType.WordCountSlidingWindowMean:
         return <SentReceivedSlidingWindowChart slidingWindowMeanDailyWords={data.slidingWindowMeanDailyWords} mode="text" />;
       case ChartType.SecondCountSlidingWindowMean:
@@ -82,11 +104,34 @@ export default function ChartContainer({ type, data }: ChartContainerProps) {
 
       // Daily activity times
       case ChartType.DailyActivityHoursChart:
-        return <DailyActivityChart dataSentPerConversation={data.dailySentHoursPerConversation} listOfConversations={data.focusConversations} />;
+        return (
+          <DailyActivityChart dataSentPerConversation={data.dailySentHoursPerConversation} listOfConversations={data.focusConversations} />
+        );
       case ChartType.DayPartsActivityOverallChart:
         return <DayPartsActivityOverallChart dailySentHours={data.dailySentHours} dailyReceivedHours={data.dailyReceivedHours} />;
       case ChartType.AnimatedDayPartsActivityChart:
-        return <AnimatedDayPartsActivityChart dataSentPerConversation={data.dailySentHoursPerConversation} listOfConversations={data.focusConversations} />;
+        return (
+          <AnimatedDayPartsActivityChart
+            dataSentPerConversation={data.dailySentHoursPerConversation}
+            listOfConversations={data.focusConversations}
+          />
+        );
+
+      // Social content
+      case ChartType.PostActivityChart:
+        return data.postStats ? <PostActivityChart postStats={data.postStats} /> : null;
+      case ChartType.CommentActivityChart:
+        return data.commentStats ? <CommentActivityChart commentStats={data.commentStats} /> : null;
+      case ChartType.ReactionBreakdownChart:
+        return data.reactionStats ? <ReactionBreakdownChart reactionStats={data.reactionStats} /> : null;
+      case ChartType.SocialEngagementTimelineChart:
+        return data.postStats || data.commentStats || data.reactionStats ? (
+          <SocialEngagementTimelineChart postStats={data.postStats} commentStats={data.commentStats} reactionStats={data.reactionStats} />
+        ) : null;
+      case ChartType.EngagementStyleChart:
+        return data.postStats || data.commentStats || data.reactionStats ? (
+          <EngagementStyleChart postStats={data.postStats} commentStats={data.commentStats} reactionStats={data.reactionStats} />
+        ) : null;
 
       default:
         return (

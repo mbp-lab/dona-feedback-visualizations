@@ -4,11 +4,18 @@ import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 
 import { db } from "@/db/drizzle";
-import { conversations as conversationsTbl, donations as donationsTbl, graphData } from "@/db/schema";
+import {
+  comments as commentsTbl,
+  conversations as conversationsTbl,
+  donations as donationsTbl,
+  graphData,
+  posts as postsTbl,
+  reactions as reactionsTbl
+} from "@/db/schema";
 import { DONATION_ID_COOKIE } from "@/proxy";
 import produceGraphData from "@/services/charts/produceGraphData";
 import { GraphData } from "@models/graphData";
-import { DonationStatus, Conversation } from "@models/processed";
+import { Comment, Conversation, DonationStatus, Post, Reaction } from "@models/processed";
 
 export async function fetchGraphDataByDonationId(donationId: string): Promise<Record<string, GraphData>> {
   const result = await db.query.graphData.findFirst({
@@ -71,7 +78,40 @@ export async function fetchOrComputeGraphDataByDonationId(donationId: string): P
     focusInFeedback: c.focusInFeedback ?? true
   }));
 
-  const computed = produceGraphData(donation.donorId, processedConversations);
+  // Load posts, comments, reactions from DB
+  const dbPosts = await db.query.posts.findMany({
+    where: eq(postsTbl.donationId, donationId),
+    with: { dataSource: true }
+  });
+  const dbComments = await db.query.comments.findMany({
+    where: eq(commentsTbl.donationId, donationId),
+    with: { dataSource: true }
+  });
+  const dbReactions = await db.query.reactions.findMany({
+    where: eq(reactionsTbl.donationId, donationId),
+    with: { dataSource: true }
+  });
+
+  const processedPosts: Post[] = dbPosts.map(p => ({
+    wordCount: p.wordCount,
+    mediaCount: p.mediaCount,
+    timestampMs: new Date(p.dateTime).getTime(),
+    dataSource: p.dataSource.name
+  }));
+
+  const processedComments: Comment[] = dbComments.map(c => ({
+    wordCount: c.wordCount,
+    timestampMs: new Date(c.dateTime).getTime(),
+    dataSource: c.dataSource.name
+  }));
+
+  const processedReactions: Reaction[] = dbReactions.map(r => ({
+    reactionType: r.reactionType,
+    timestampMs: new Date(r.dateTime).getTime(),
+    dataSource: r.dataSource.name
+  }));
+
+  const computed = produceGraphData(donation.donorId, processedConversations, processedPosts, processedComments, processedReactions);
 
   // Persist newly computed graph data
   await db.insert(graphData).values({ donationId, data: computed });

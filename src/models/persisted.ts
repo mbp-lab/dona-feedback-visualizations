@@ -1,5 +1,5 @@
-import { conversations, messages, messagesAudio } from "@/db/schema";
-import { Conversation, Message, DataSource, MessageAudio } from "@models/processed";
+import { conversations, messages, messagesAudio, posts, comments, reactions } from "@/db/schema";
+import { Conversation, Message, DataSource, MessageAudio, Post, Comment, Reaction } from "@models/processed";
 
 type NewConversation = typeof conversations.$inferInsert;
 namespace NewConversation {
@@ -43,4 +43,41 @@ namespace NewMessageAudio {
   }
 }
 
-export { NewConversation, NewMessage, NewMessageAudio };
+type NewPost = typeof posts.$inferInsert;
+namespace NewPost {
+  export function create(donationId: string, dataSourceId: number, post: Post): NewPost {
+    return {
+      donationId,
+      dataSourceId,
+      wordCount: post.wordCount,
+      mediaCount: post.mediaCount,
+      dateTime: new Date(post.timestampMs)
+    };
+  }
+}
+
+type NewComment = typeof comments.$inferInsert;
+namespace NewComment {
+  export function create(donationId: string, dataSourceId: number, comment: Comment): NewComment {
+    return {
+      donationId,
+      dataSourceId,
+      wordCount: comment.wordCount,
+      dateTime: new Date(comment.timestampMs)
+    };
+  }
+}
+
+type NewReaction = typeof reactions.$inferInsert;
+namespace NewReaction {
+  export function create(donationId: string, dataSourceId: number, reaction: Reaction): NewReaction {
+    return {
+      donationId,
+      dataSourceId,
+      reactionType: reaction.reactionType,
+      dateTime: new Date(reaction.timestampMs)
+    };
+  }
+}
+
+export { NewConversation, NewMessage, NewMessageAudio, NewPost, NewComment, NewReaction };

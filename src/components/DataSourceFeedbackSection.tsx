@@ -43,6 +43,8 @@ export default function DataSourceFeedbackSection({
   isGeneratingPdf?: boolean;
 }) {
   const showDetailedAudioFeedback = [DataSourceValue.Facebook, DataSourceValue.Instagram].includes(dataSourceValue);
+  const showContentFeedback = [DataSourceValue.Facebook, DataSourceValue.Instagram].includes(dataSourceValue);
+  const hasContentData = !!(graphData.postStats || graphData.commentStats || graphData.reactionStats);
   console.log("DataSourceFeedbackSection graphData", graphData);
   let t = useTranslations("feedback");
   const ii = useTranslations("feedback.interactionIntensity");
@@ -235,6 +237,62 @@ export default function DataSourceFeedbackSection({
           defaultWindowDays={30}
         />
       </Box>
+
+      {/* Social Content Activity */}
+      {showContentFeedback && hasContentData && (
+        <>
+          <Typography variant="h6" sx={{ mt: 3 }}>
+            Social Content Activity
+          </Typography>
+          <Box>
+            <Typography variant="body1" fontWeight="fontWeightBold">
+              Social Engagement Timeline
+            </Typography>
+            <Typography variant="body2">Combined view of all your social content activity over time.</Typography>
+          </Box>
+          <ChartContainer type={ChartType.SocialEngagementTimelineChart} data={graphData} dataSourceValue={dataSourceValue} />
+          <Box>
+            <Typography variant="body1" fontWeight="fontWeightBold">
+              Your Engagement Style
+            </Typography>
+            <Typography variant="body2">How your activity is distributed across creating, commenting, and reacting.</Typography>
+          </Box>
+          <ChartContainer type={ChartType.EngagementStyleChart} data={graphData} dataSourceValue={dataSourceValue} />
+          {graphData.postStats && (
+            <>
+              <Box>
+                <Typography variant="body1" fontWeight="fontWeightBold">
+                  Post Activity
+                </Typography>
+                <Typography variant="body2">Frequency and composition of your posts over time.</Typography>
+              </Box>
+              <ChartContainer type={ChartType.PostActivityChart} data={graphData} dataSourceValue={dataSourceValue} />
+            </>
+          )}
+          {graphData.commentStats && (
+            <>
+              <Box>
+                <Typography variant="body1" fontWeight="fontWeightBold">
+                  Comment Activity
+                </Typography>
+                <Typography variant="body2">Your commenting activity over time.</Typography>
+              </Box>
+              <ChartContainer type={ChartType.CommentActivityChart} data={graphData} dataSourceValue={dataSourceValue} />
+            </>
+          )}
+          {graphData.reactionStats && (
+            <>
+              <Box>
+                <Typography variant="body1" fontWeight="fontWeightBold">
+                  Reactions
+                </Typography>
+                <Typography variant="body2">Breakdown of your reaction types and activity over time.</Typography>
+              </Box>
+              <ChartContainer type={ChartType.ReactionBreakdownChart} data={graphData} dataSourceValue={dataSourceValue} />
+            </>
+          )}
+        </>
+      )}
     </Stack>
   );
 
@@ -271,6 +329,57 @@ export default function DataSourceFeedbackSection({
               defaultWindowDays={30}
             />
           </Box>
+
+          {/* Social Content Activity (Posts, Comments, Reactions) */}
+          {showContentFeedback && hasContentData && (
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Social Content Activity
+              </Typography>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="body1" fontWeight="fontWeightBold" sx={{ mb: 1 }}>
+                  Social Engagement Timeline
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  Combined view of all your social content activity over time.
+                </Typography>
+                <ChartContainer type={ChartType.SocialEngagementTimelineChart} data={graphData} dataSourceValue={dataSourceValue} />
+              </Box>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="body1" fontWeight="fontWeightBold" sx={{ mb: 1 }}>
+                  Your Engagement Style
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  How your activity is distributed across creating, commenting, and reacting.
+                </Typography>
+                <ChartContainer type={ChartType.EngagementStyleChart} data={graphData} dataSourceValue={dataSourceValue} />
+              </Box>
+              {graphData.postStats && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body1" fontWeight="fontWeightBold" sx={{ mb: 1 }}>
+                    Post Activity
+                  </Typography>
+                  <ChartContainer type={ChartType.PostActivityChart} data={graphData} dataSourceValue={dataSourceValue} />
+                </Box>
+              )}
+              {graphData.commentStats && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body1" fontWeight="fontWeightBold" sx={{ mb: 1 }}>
+                    Comment Activity
+                  </Typography>
+                  <ChartContainer type={ChartType.CommentActivityChart} data={graphData} dataSourceValue={dataSourceValue} />
+                </Box>
+              )}
+              {graphData.reactionStats && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body1" fontWeight="fontWeightBold" sx={{ mb: 1 }}>
+                    Reactions
+                  </Typography>
+                  <ChartContainer type={ChartType.ReactionBreakdownChart} data={graphData} dataSourceValue={dataSourceValue} />
+                </Box>
+              )}
+            </Box>
+          )}
 
           <Stack direction="row" spacing={2} sx={{ mt: 2, mb: 2, justifyContent: "center" }}>
             <Button variant="contained" size="large" onClick={openScientificModal}>

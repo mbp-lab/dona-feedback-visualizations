@@ -16,7 +16,7 @@ import { checkForDuplicateConversations } from "@/app/data-donation/actions";
 import AnonymizationPreview from "@components/AnonymizationPreview";
 import DateRangePicker from "@components/DateRangePicker";
 import LoadingSpinner from "@components/LoadingSpinner";
-import { AnonymizationResult, Conversation, DataSourceValue } from "@models/processed";
+import { AnonymizationResult, Comment, Conversation, DataSourceValue, Post, Reaction } from "@models/processed";
 import { DonationErrors, getErrorMessage } from "@services/errors";
 import { calculateMinMaxDates, filterDataByRange, NullableRange, validateDateRange } from "@services/rangeFiltering";
 import { validateMinChatsForDonation, validateMinImportantChatsForDonation } from "@services/validation";
@@ -27,16 +27,24 @@ const UploadAlert = styled((props: AlertProps) => <Alert severity="error" {...pr
   width: "100%"
 }));
 
+export interface ContentData {
+  posts: Post[];
+  comments: Comment[];
+  reactions: Reaction[];
+}
+
 interface DonationDataSelectorProps {
   dataSourceValue: DataSourceValue;
   onDonatedConversationsChange: (newDonatedConversations: Conversation[]) => void;
   onFeedbackChatsChange: (newFeedbackChats: Set<string>) => void;
+  onContentDataChange?: (contentData: ContentData) => void;
 }
 
 const DonationDataSelector: React.FC<DonationDataSelectorProps> = ({
   dataSourceValue,
   onDonatedConversationsChange,
-  onFeedbackChatsChange
+  onFeedbackChatsChange,
+  onContentDataChange
 }) => {
   const donation = useRichTranslations("donation");
   const acceptedFileTypes =
@@ -92,7 +100,8 @@ const DonationDataSelector: React.FC<DonationDataSelectorProps> = ({
       setAnonymizationResult({ ...result, anonymizedConversations: conversationsWithHashes });
       setCalculatedRange([minDate, maxDate]);
       setFilteredConversations(conversationsWithHashes);
-      onDonatedConversationsChange(conversationsWithHashes); // Update data for parent
+      onDonatedConversationsChange(conversationsWithHashes);
+      onContentDataChange?.({ posts: result.posts, comments: result.comments, reactions: result.reactions });
     } catch (err) {
       const errorMessage = getErrorMessage(donation.t, err as Error, CONFIG);
       setError(errorMessage);
@@ -110,7 +119,8 @@ const DonationDataSelector: React.FC<DonationDataSelectorProps> = ({
     setAnonymizationResult(null);
     setFilteredConversations([]);
     onDonatedConversationsChange([]);
-    setFileInputKey(prevKey => prevKey + 1); // Update the key to reset the file input
+    onContentDataChange?.({ posts: [], comments: [], reactions: [] });
+    setFileInputKey(prevKey => prevKey + 1);
   };
 
   // Handle date range selection

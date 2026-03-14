@@ -17,7 +17,9 @@ export default async function deIdentify(parsedFiles: ParsedMessage[][], donorNa
     const participantPseudonyms = new Set<string>();
 
     // Filter out system messages
-    const filteredMessages: ParsedMessage[] = parsedMessaged.filter(parsedMessage => parsedMessage.message && parsedMessage.author != aliasConfig.systemAlias); // Filter out system messages
+    const filteredMessages: ParsedMessage[] = parsedMessaged.filter(
+      parsedMessage => parsedMessage.message && parsedMessage.author != aliasConfig.systemAlias
+    ); // Filter out system messages
 
     console.log("Processing conversation", conv_idx + 1, "with", parsedMessaged.length, "messages");
     console.log("Filtered messages count:", filteredMessages.length);
@@ -50,6 +52,9 @@ export default async function deIdentify(parsedFiles: ParsedMessage[][], donorNa
 
   return {
     anonymizedConversations: deIdentifiedConversations,
+    posts: [],
+    comments: [],
+    reactions: [],
     participantNamesToPseudonyms: contactPseudonyms.getPseudonymMap(),
     chatMappingToShow: chatPseudonyms.getPseudonymMap()
   };

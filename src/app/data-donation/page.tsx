@@ -24,16 +24,18 @@ import produceGraphData from "@/services/charts/produceGraphData";
 import { useAliasConfig } from "@/services/parsing/shared/aliasConfig";
 import { MainTitle, RichText } from "@/styles/StyledTypography";
 import { FacebookIcon, IMessageIcon, InstagramIcon, WhatsAppIcon } from "@components/CustomIcon";
-import { Conversation, DataSourceValue } from "@models/processed";
+import { Conversation, DataSourceValue, Post, Comment, Reaction } from "@models/processed";
+import { ContentData } from "@components/DonationDataSelector";
 import { getErrorMessage } from "@services/errors";
 
-import { appendConversationBatch, finalizeDonation, logClientError, startDonation } from "./actions";
+import { appendConversationBatch, appendContentData, finalizeDonation, logClientError, startDonation } from "./actions";
 import { calculateDonationStats } from "@services/donationStats";
 
 const CONVERSATION_BATCH_SIZE = 250;
 
 type ConversationsBySource = Record<DataSourceValue, Conversation[]>;
 type SelectedChatsBySource = Record<DataSourceValue, Set<string>>;
+type ContentDataBySource = Record<DataSourceValue, ContentData>;
 
 export default function DataDonationPage() {
   const router = useRouter();
@@ -46,6 +48,7 @@ export default function DataDonationPage() {
     {} as ConversationsBySource
   );
   const [feedbackChatsBySource, setFeedbackChatsBySource] = useState<SelectedChatsBySource>({} as SelectedChatsBySource);
+  const [contentDataBySource, setContentDataBySource] = useState<ContentDataBySource>({} as ContentDataBySource);
   const [loading, setLoading] = useState(false);
   const [validated, setValidated] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -72,6 +75,13 @@ export default function DataDonationPage() {
     setFeedbackChatsBySource(prev => ({
       ...prev,
       [dataSource]: newFeedbackChats
+    }));
+  };
+
+  const handleContentDataChange = (dataSource: DataSourceValue, contentData: ContentData) => {
+    setContentDataBySource(prev => ({
+      ...prev,
+      [dataSource]: contentData
     }));
   };
 
@@ -111,8 +121,17 @@ export default function DataDonationPage() {
           if (!res.success) throw res.error;
         }
 
+        // 2b) Upload posts, comments, reactions
+        const allPosts = Object.values(contentDataBySource).flatMap(cd => cd.posts ?? []);
+        const allComments = Object.values(contentDataBySource).flatMap(cd => cd.comments ?? []);
+        const allReactions = Object.values(contentDataBySource).flatMap(cd => cd.reactions ?? []);
+        if (allPosts.length > 0 || allComments.length > 0 || allReactions.length > 0) {
+          const contentRes = await appendContentData(donationId, allPosts, allComments, allReactions);
+          if (!contentRes.success) throw contentRes.error;
+        }
+
         // 3) Compute graph data client-side and finalize
-        const graphDataRecord = produceGraphData(aliasConfig.donorAlias, allConversations);
+        const graphDataRecord = produceGraphData(aliasConfig.donorAlias, allConversations, allPosts, allComments, allReactions);
         const fin = await finalizeDonation(donationId, graphDataRecord as any);
         if (!fin.success || !fin.data) throw fin.error;
 
@@ -215,6 +234,7 @@ export default function DataDonationPage() {
                   dataSourceValue={source}
                   onDonatedConversationsChange={newConversations => handleDonatedConversationsChange(source, newConversations)}
                   onFeedbackChatsChange={newFeedbackChats => handleFeedbackChatsChange(source, newFeedbackChats)}
+                  onContentDataChange={contentData => handleContentDataChange(source, contentData)}
                 />
               </AccordionDetails>
             </Accordion>
