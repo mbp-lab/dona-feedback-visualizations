@@ -1,10 +1,12 @@
 import Box from "@mui/material/Box";
+import { alpha } from "@mui/material/styles";
 import { CategoryScale, Chart as ChartJS, Filler, Legend, LinearScale, LineElement, PointElement, Tooltip } from "chart.js";
 import { useTranslations } from "next-intl";
 import React, { useMemo } from "react";
 import { Line } from "react-chartjs-2";
 
-import { CHART_COLORS, CHART_LAYOUT, COMMON_CHART_OPTIONS, TOP_LEGEND } from "@components/charts/chartConfig";
+import { CHART_LAYOUT, COMMON_CHART_OPTIONS, TOP_LEGEND } from "@components/charts/chartConfig";
+import { FEEDBACK_SECTION_CHART_RECEIVED, FEEDBACK_SECTION_CHART_SENT } from "@components/charts/feedbackSectionTheme";
 import DownloadButtons from "@components/charts/DownloadButtons";
 import { DailySentReceivedPoint } from "@models/graphData";
 
@@ -13,9 +15,15 @@ ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip,
 interface SentReceivedSlidingWindowChartProps {
   slidingWindowMeanDailyWords: DailySentReceivedPoint[];
   mode: "text" | "audio";
+  /** When true, chart uses full width of parent (e.g. side-by-side layouts). */
+  expandToContainer?: boolean;
 }
 
-const SentReceivedSlidingWindowChart: React.FC<SentReceivedSlidingWindowChartProps> = ({ slidingWindowMeanDailyWords, mode }) => {
+const SentReceivedSlidingWindowChart: React.FC<SentReceivedSlidingWindowChartProps> = ({
+  slidingWindowMeanDailyWords,
+  mode,
+  expandToContainer = false
+}) => {
   const CHART_NAME = `sliding-window-mean-${mode}-chart`;
   const container_name = `chart-wrapper-${CHART_NAME}`;
 
@@ -33,8 +41,8 @@ const SentReceivedSlidingWindowChart: React.FC<SentReceivedSlidingWindowChartPro
         {
           label: chartTexts("legend.sent"),
           data: sentData,
-          borderColor: CHART_COLORS.primary,
-          backgroundColor: CHART_COLORS.primaryTransparent,
+          borderColor: FEEDBACK_SECTION_CHART_SENT,
+          backgroundColor: alpha(FEEDBACK_SECTION_CHART_SENT, 0.22),
           fill: true,
           pointRadius: 3,
           pointStyle: mode === "audio" ? "cross" : "circle"
@@ -42,8 +50,8 @@ const SentReceivedSlidingWindowChart: React.FC<SentReceivedSlidingWindowChartPro
         {
           label: chartTexts("legend.received"),
           data: receivedData,
-          borderColor: CHART_COLORS.secondary,
-          backgroundColor: CHART_COLORS.secondaryTransparent,
+          borderColor: FEEDBACK_SECTION_CHART_RECEIVED,
+          backgroundColor: alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22),
           fill: true,
           pointRadius: 3,
           pointStyle: mode === "audio" ? "cross" : "circle"
@@ -53,12 +61,12 @@ const SentReceivedSlidingWindowChart: React.FC<SentReceivedSlidingWindowChartPro
   }, [slidingWindowMeanDailyWords, chartTexts]);
 
   return (
-    <Box sx={{ width: "100%", maxWidth: CHART_LAYOUT.maxWidth, mx: "auto" }}>
+    <Box sx={{ width: "100%", maxWidth: expandToContainer ? "none" : CHART_LAYOUT.maxWidth, mx: "auto" }}>
       <Box id={container_name} position="relative" p={CHART_LAYOUT.paddingX}>
         <Box display="flex" justifyContent="right" alignItems="center" mb={-2}>
           <DownloadButtons chartId={container_name} fileNamePrefix={CHART_NAME} />
         </Box>
-        <Box sx={{ width: "100%", minHeight: "250px" }}>
+        <Box sx={{ width: "100%", minHeight: expandToContainer ? 300 : 250 }}>
           <Line
             data={chartData}
             options={{

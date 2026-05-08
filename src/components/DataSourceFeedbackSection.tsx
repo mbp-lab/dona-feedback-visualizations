@@ -7,29 +7,36 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { alpha } from "@mui/material/styles";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
+import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
 import CircularProgress from "@mui/material/CircularProgress";
-import StatisticsCard from "@components/StatisticsCard";
+import Divider from "@mui/material/Divider";
 import ChartContainer, { ChartType } from "@components/charts/ChartContainer";
 import ChartExplanationModal from "@components/charts/ChartExplanationModal";
-import MoreChartsModal from "@components/charts/MoreChartsModal";
+import {
+  FEEDBACK_SECTION_CHART_RECEIVED,
+  FEEDBACK_SECTION_CHART_SENT,
+  FEEDBACK_SECTION_SURFACE as SURFACE,
+  FEEDBACK_SECTION_TEXT_MAIN as TEXT_MAIN,
+  FEEDBACK_SECTION_TEXT_MUTED as TEXT_MUTED,
+  feedbackChartControlOutlinedButtonSx,
+  feedbackChartPaletteHeaderStripSx,
+  feedbackChartPaletteIconBoxSx,
+  feedbackChartPaletteOuterSx,
+  feedbackSectionBodySx,
+  feedbackPlotPanelSx
+} from "@components/charts/feedbackSectionTheme";
 import { DataSourceValue } from "@models/processed";
-import { DailyHourPoint, GraphData } from "@models/graphData";
+import { GraphData } from "@models/graphData";
 import GeneralInfoCarousel from "@components/charts/GeneralInfoCarousel";
 import ChatSummaryCarousel from "@components/charts/ChatSummaryCarousel";
 import ComparisonCarousel from "@components/charts/ComparisonCarousel";
-import EventComparisonChart from "@components/charts/EventComparisonChart";
-import FullSizeModal from "@components/FullSizeModal";
-import { MainTitle } from "@/styles/StyledTypography";
-
-type SectionName = "responseTimes" | "dailyActivityTimes" | "interactionIntensity";
-
-const toMessageData = (points: DailyHourPoint[]) =>
-  points.map(p => ({
-    dateTime: new Date(p.year, p.month - 1, p.date, p.hour, p.minute),
-    wordCount: p.wordCount
-  }));
+import ChatActivitySection from "@components/charts/ChatActivitySection";
+import LifeEventActivitySection from "@components/charts/LifeEventActivitySection";
 
 export default function DataSourceFeedbackSection({
   dataSourceValue,
@@ -45,23 +52,15 @@ export default function DataSourceFeedbackSection({
   const showDetailedAudioFeedback = [DataSourceValue.Facebook, DataSourceValue.Instagram].includes(dataSourceValue);
   const showContentFeedback = [DataSourceValue.Facebook, DataSourceValue.Instagram].includes(dataSourceValue);
   const hasContentData = !!(graphData.postStats || graphData.commentStats || graphData.reactionStats);
+  const showMessageComposition = showDetailedAudioFeedback || !!graphData.emojiDistribution;
   console.log("DataSourceFeedbackSection graphData", graphData);
-  let t = useTranslations("feedback");
+  const t = useTranslations("feedback");
   const ii = useTranslations("feedback.interactionIntensity");
-  const dat = useTranslations("feedback.dailyActivityTimes");
-  const rt = useTranslations("feedback.responseTimes");
+  const socialT = useTranslations("feedback.socialContent");
 
-  // State for ChartExplanationModal
   const [modalContent, setModalContent] = useState<{ title: string; contentHtml: string; imageSrc?: string } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // State for MoreChartsModal
-  const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
-  const [currentSection, setCurrentSection] = useState<SectionName | null>(null);
-
-  const [isScientificModalOpen, setIsScientificModalOpen] = useState(false);
-
-  // Handlers for ChartExplanationModal
   const openExplanationModal = (title: string, contentHtml: string, imageSrc?: string) => {
     setModalContent({ title, contentHtml, imageSrc });
     setIsModalOpen(true);
@@ -71,22 +70,15 @@ export default function DataSourceFeedbackSection({
     setModalContent(null);
   };
 
-  // Handlers for MoreChartsModal
-  const openSectionModal = (section: SectionName) => {
-    setCurrentSection(section);
-    setIsSectionModalOpen(true);
-  };
-  const closeSectionModal = () => {
-    setIsSectionModalOpen(false);
-    setCurrentSection(null);
-  };
-
-  const openScientificModal = () => setIsScientificModalOpen(true);
-  const closeScientificModal = () => setIsScientificModalOpen(false);
-
-  const openModalSpan = (content: ReactNode, translator: any, chartName: string) => (
-    <span
-      style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }}
+  const openModalSpan = (content: ReactNode, translator: any, chartName: string, linkColor: string = FEEDBACK_SECTION_CHART_SENT) => (
+    <Box
+      component="span"
+      sx={{
+        color: linkColor,
+        textDecoration: "underline",
+        cursor: "pointer",
+        "&:hover": { color: alpha(linkColor, 0.85) }
+      }}
       onClick={() =>
         openExplanationModal(
           translator(translator.has(`${chartName}.title`) ? `${chartName}.title` : "title"),
@@ -96,315 +88,324 @@ export default function DataSourceFeedbackSection({
       }
     >
       {content}
-    </span>
-  );
-
-  const renderScientificCharts = () => (
-    <Stack
-      direction="column"
-      spacing={2}
-      sx={{ display: "flex", textAlign: "center", bgcolor: "background.paper", p: 2 }} // Added padding for modal
-    >
-      {/* Message composition */}
-      <Typography variant="h6">{t("messageComposition.title")}</Typography>
-      {/* TODO: Add media as type */}
-      <Box>
-        <Typography variant="body1" fontWeight="fontWeightBold">
-          {t("messageComposition.messageTypesBarChart.title")}
-        </Typography>
-        <Typography variant="body2">
-          {t.rich("messageComposition.messageTypesBarChart.description", {
-            button: label => openModalSpan(label, t, "messageComposition.messageTypesBarChart")
-          })}
-        </Typography>
-      </Box>
-      <ChartContainer type={ChartType.MessageTypesBarChart} data={graphData} dataSourceValue={dataSourceValue} />
-      {showDetailedAudioFeedback && (
-        <>
-          <Box>
-            <Typography variant="body1" fontWeight="fontWeightBold">
-              {t("messageComposition.audioLengthsBarChart.title")}
-            </Typography>
-            <Typography variant="body2">
-              {t.rich("messageComposition.audioLengthsBarChart.description", {
-                button: label => openModalSpan(label, t, "messageComposition.audioLengthsBarChart")
-              })}
-            </Typography>
-          </Box>
-          <ChartContainer type={ChartType.AudioLengthsBarChart} data={graphData} dataSourceValue={dataSourceValue} />
-        </>
-      )}
-      {/* TODO: Histogram word counts? */}
-      {/* Emoji analysis */}
-      {graphData.emojiDistribution && (
-        <>
-          <Box>
-            <Typography variant="body1" fontWeight="fontWeightBold">
-              {t("messageComposition.emojiBarChart.title")}
-            </Typography>
-            <Typography variant="body2">
-              {t.rich("messageComposition.emojiBarChart.description", {
-                button: label => openModalSpan(label, t, "messageComposition.emojiBarChart")
-              })}
-            </Typography>
-          </Box>
-          <ChartContainer type={ChartType.EmojiBarChart} data={graphData} dataSourceValue={dataSourceValue} />
-        </>
-      )}
-
-      {/* Interaction Intensity */}
-      <Typography variant="h6">{ii("title")}</Typography>
-      <Box>
-        <Typography variant="body1" fontWeight="fontWeightBold">
-          {ii("animatedIntensityPolarChart.title")}
-        </Typography>
-        <Typography variant="body2">
-          {ii.rich("animatedIntensityPolarChart.description", {
-            button: label => openModalSpan(label, ii, "animatedIntensityPolarChart")
-          })}
-        </Typography>
-      </Box>
-      <ChartContainer type={ChartType.AnimatedIntensityPolarChart} data={graphData} dataSourceValue={dataSourceValue} />
-      <Box>
-        <Typography variant="body1" fontWeight="fontWeightBold" sx={{ mt: 2 }}>
-          {ii("wordCountSlidingWindowMean.title")}
-        </Typography>
-        <Typography variant="body2">{ii("wordCountSlidingWindowMean.description")}</Typography>
-      </Box>
-      <ChartContainer type={ChartType.WordCountSlidingWindowMean} data={graphData} dataSourceValue={dataSourceValue} />
-      {showDetailedAudioFeedback && (
-        <>
-          <Box>
-            <Typography variant="body1" fontWeight="fontWeightBold">
-              {ii("animatedSecondsPerChatBarChart.title")}
-            </Typography>
-            <Typography variant="body2">
-              {ii.rich("animatedSecondsPerChatBarChart.description", {
-                button: label => openModalSpan(label, ii, "animatedSecondsPerChatBarChart")
-              })}
-            </Typography>
-          </Box>
-          <ChartContainer type={ChartType.AnimatedSecondsPerChatBarChart} data={graphData} dataSourceValue={dataSourceValue} />
-        </>
-      )}
-
-      {/* Daily Activity Times */}
-      <Typography variant="h6">{dat("title")}</Typography>
-      <Box>
-        <Typography variant="body2">
-          {dat.rich("dailyActivityHoursChart.description", {
-            button: label => openModalSpan(label, dat, "dailyActivityHoursChart")
-          })}
-        </Typography>
-      </Box>
-      <ChartContainer type={ChartType.DailyActivityHoursChart} data={graphData} dataSourceValue={dataSourceValue} />
-
-      <Box>
-        <Typography variant="body1" fontWeight="fontWeightBold" sx={{ mt: 2 }}>
-          {dat("dayPartsMonthly.title")}
-        </Typography>
-        <Typography variant="body2">
-          {dat.rich("dayPartsMonthly.description", {
-            u: chunks => <u>{chunks}</u>
-          })}
-        </Typography>
-      </Box>
-      <ChartContainer type={ChartType.AnimatedDayPartsActivityChart} data={graphData} dataSourceValue={dataSourceValue} />
-
-      {/* Response Times */}
-      <Typography variant="h6">{rt("title")}</Typography>
-      <Box>
-        <Typography variant="body2">
-          {rt.rich("responseTimeBarChart.description", {
-            button: label => openModalSpan(label, rt, "responseTimeBarChart")
-          })}
-        </Typography>
-      </Box>
-      <ChartContainer type={ChartType.ResponseTimeBarChart} data={graphData} dataSourceValue={dataSourceValue} />
-
-      {/* Event-Based Activity Analysis */}
-      <Typography variant="h6" sx={{ mt: 3 }}>
-        Event-Based Activity Analysis
-      </Typography>
-      <Box sx={{ textAlign: "left" }}>
-        <EventComparisonChart
-          sentMessages={toMessageData(graphData.dailySentHours)}
-          receivedMessages={toMessageData(graphData.dailyReceivedHours)}
-          perChatSentMessages={graphData.dailySentHoursPerConversation.map((points, i) => ({
-            chatName: graphData.focusConversations[i] ?? `Chat ${i + 1}`,
-            messages: toMessageData(points)
-          }))}
-          defaultWindowDays={30}
-        />
-      </Box>
-
-      {/* Social Content Activity */}
-      {showContentFeedback && hasContentData && (
-        <>
-          <Typography variant="h6" sx={{ mt: 3 }}>
-            Social Content Activity
-          </Typography>
-          <Box>
-            <Typography variant="body1" fontWeight="fontWeightBold">
-              Social Engagement Timeline
-            </Typography>
-            <Typography variant="body2">Combined view of all your social content activity over time.</Typography>
-          </Box>
-          <ChartContainer type={ChartType.SocialEngagementTimelineChart} data={graphData} dataSourceValue={dataSourceValue} />
-          <Box>
-            <Typography variant="body1" fontWeight="fontWeightBold">
-              Your Engagement Style
-            </Typography>
-            <Typography variant="body2">How your activity is distributed across creating, commenting, and reacting.</Typography>
-          </Box>
-          <ChartContainer type={ChartType.EngagementStyleChart} data={graphData} dataSourceValue={dataSourceValue} />
-          {graphData.postStats && (
-            <>
-              <Box>
-                <Typography variant="body1" fontWeight="fontWeightBold">
-                  Post Activity
-                </Typography>
-                <Typography variant="body2">Frequency and composition of your posts over time.</Typography>
-              </Box>
-              <ChartContainer type={ChartType.PostActivityChart} data={graphData} dataSourceValue={dataSourceValue} />
-            </>
-          )}
-          {graphData.commentStats && (
-            <>
-              <Box>
-                <Typography variant="body1" fontWeight="fontWeightBold">
-                  Comment Activity
-                </Typography>
-                <Typography variant="body2">Your commenting activity over time.</Typography>
-              </Box>
-              <ChartContainer type={ChartType.CommentActivityChart} data={graphData} dataSourceValue={dataSourceValue} />
-            </>
-          )}
-          {graphData.reactionStats && (
-            <>
-              <Box>
-                <Typography variant="body1" fontWeight="fontWeightBold">
-                  Reactions
-                </Typography>
-                <Typography variant="body2">Breakdown of your reaction types and activity over time.</Typography>
-              </Box>
-              <ChartContainer type={ChartType.ReactionBreakdownChart} data={graphData} dataSourceValue={dataSourceValue} />
-            </>
-          )}
-        </>
-      )}
-    </Stack>
+    </Box>
   );
 
   return (
-    <Accordion defaultExpanded>
-      <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-        <Typography variant="h6">{t("sourceTitle", { source: dataSourceValue })}</Typography>
+    <Accordion
+      defaultExpanded
+      elevation={0}
+      sx={{
+        bgcolor: "#ffffff",
+        borderRadius: 2,
+        border: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.45)}`,
+        boxShadow: `0 2px 12px ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.12)}, 0 2px 8px ${alpha(TEXT_MAIN, 0.04)}`,
+        "&:before": { display: "none" }
+      }}
+    >
+      <AccordionSummary
+        expandIcon={<ArrowDropDownIcon sx={{ color: FEEDBACK_SECTION_CHART_SENT }} />}
+        sx={{
+          px: 2,
+          bgcolor: alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.06),
+          borderBottom: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22)}`,
+          "& .MuiAccordionSummary-content": { my: 1.25 }
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 700, color: TEXT_MAIN }}>
+          {t("sourceTitle", { source: dataSourceValue })}
+        </Typography>
       </AccordionSummary>
-      <AccordionDetails sx={{ width: "100%", overflowX: "hidden" }}>
-        <Stack direction="column" spacing={2} sx={{ display: "flex", textAlign: "center", bgcolor: "background.paper" }}>
-          {/* Statistics card 
-                    <Typography variant="h6">{t("statisticsCard.title")}</Typography>
-                    <StatisticsCard stats={graphData.basicStatistics} />
-                    */}
+      <AccordionDetails sx={{ width: "100%", overflowX: "hidden", bgcolor: SURFACE, px: { xs: 1, sm: 1.5 }, py: 2 }}>
+        <Stack direction="column" spacing={3} sx={{ display: "flex", textAlign: "center" }}>
+          <GeneralInfoCarousel data={graphData} isWhatsApp={dataSourceValue === DataSourceValue.WhatsApp} />
 
-          {/* General Info Carousel */}
-          <GeneralInfoCarousel data={graphData} />
-
-          {/* Comparison Carousel */}
           <ComparisonCarousel data={graphData} />
 
-          {/* Chat Summary Carousel */}
-          <ChatSummaryCarousel data={graphData} />
-
-          {/* Event-Based Activity Analysis */}
-          <Box sx={{ textAlign: "left", mt: 2 }}>
-            <EventComparisonChart
-              sentMessages={toMessageData(graphData.dailySentHours)}
-              receivedMessages={toMessageData(graphData.dailyReceivedHours)}
-              perChatSentMessages={graphData.dailySentHoursPerConversation.map((points, i) => ({
-                chatName: graphData.focusConversations[i] ?? `Chat ${i + 1}`,
-                messages: toMessageData(points)
-              }))}
-              defaultWindowDays={30}
-            />
-          </Box>
-
-          {/* Social Content Activity (Posts, Comments, Reactions) */}
-          {showContentFeedback && hasContentData && (
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Social Content Activity
-              </Typography>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="body1" fontWeight="fontWeightBold" sx={{ mb: 1 }}>
-                  Social Engagement Timeline
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  Combined view of all your social content activity over time.
-                </Typography>
-                <ChartContainer type={ChartType.SocialEngagementTimelineChart} data={graphData} dataSourceValue={dataSourceValue} />
+          {showMessageComposition && (
+            <Box sx={feedbackChartPaletteOuterSx}>
+              <Box aria-hidden sx={{ display: "flex", height: 4, width: "100%" }}>
+                <Box sx={{ flex: 1, bgcolor: FEEDBACK_SECTION_CHART_SENT }} />
+                <Box sx={{ flex: 1, bgcolor: FEEDBACK_SECTION_CHART_RECEIVED }} />
               </Box>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="body1" fontWeight="fontWeightBold" sx={{ mb: 1 }}>
-                  Your Engagement Style
+              <Box sx={feedbackChartPaletteHeaderStripSx}>
+                <Stack direction="row" spacing={1.25} alignItems="center" justifyContent="center" sx={{ mb: 1 }}>
+                  <Box sx={feedbackChartPaletteIconBoxSx}>
+                    <EditNoteOutlinedIcon sx={{ fontSize: 26, color: FEEDBACK_SECTION_CHART_SENT }} />
+                  </Box>
+                  <Box sx={{ textAlign: "left" }}>
+                    <Typography
+                      variant="overline"
+                      sx={{
+                        display: "block",
+                        letterSpacing: "0.2em",
+                        fontWeight: 700,
+                        fontSize: "0.65rem",
+                        color: FEEDBACK_SECTION_CHART_SENT
+                      }}
+                    >
+                      {t("messageComposition.cardOverline")}
+                    </Typography>
+                    <Typography
+                      variant="h3"
+                      component="h2"
+                      sx={{
+                        fontWeight: 800,
+                        letterSpacing: "-0.03em",
+                        color: TEXT_MAIN,
+                        fontSize: { xs: "1.45rem", sm: "1.85rem" },
+                        lineHeight: 1.2
+                      }}
+                    >
+                      {t("messageComposition.title")}
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Typography variant="body2" sx={{ textAlign: "center", color: TEXT_MUTED, maxWidth: 520, mx: "auto", lineHeight: 1.55 }}>
+                  {t("messageComposition.cardIntro")}
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  How your activity is distributed across creating, commenting, and reacting.
-                </Typography>
-                <ChartContainer type={ChartType.EngagementStyleChart} data={graphData} dataSourceValue={dataSourceValue} />
               </Box>
-              {graphData.postStats && (
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="body1" fontWeight="fontWeightBold" sx={{ mb: 1 }}>
-                    Post Activity
-                  </Typography>
-                  <ChartContainer type={ChartType.PostActivityChart} data={graphData} dataSourceValue={dataSourceValue} />
-                </Box>
-              )}
-              {graphData.commentStats && (
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="body1" fontWeight="fontWeightBold" sx={{ mb: 1 }}>
-                    Comment Activity
-                  </Typography>
-                  <ChartContainer type={ChartType.CommentActivityChart} data={graphData} dataSourceValue={dataSourceValue} />
-                </Box>
-              )}
-              {graphData.reactionStats && (
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="body1" fontWeight="fontWeightBold" sx={{ mb: 1 }}>
-                    Reactions
-                  </Typography>
-                  <ChartContainer type={ChartType.ReactionBreakdownChart} data={graphData} dataSourceValue={dataSourceValue} />
-                </Box>
-              )}
+              <Box sx={feedbackSectionBodySx}>
+                <Stack
+                  spacing={3}
+                  divider={
+                    showDetailedAudioFeedback && graphData.emojiDistribution ? (
+                      <Divider flexItem sx={{ borderColor: alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22) }} />
+                    ) : undefined
+                  }
+                  sx={{ width: "100%" }}
+                >
+                  {showDetailedAudioFeedback && (
+                    <Box sx={{ ...feedbackPlotPanelSx, display: "flex", flexDirection: "column", alignItems: "stretch" }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, textAlign: "center", color: TEXT_MAIN }}>
+                        {t("messageComposition.audioLengthsBarChart.title")}
+                      </Typography>
+                      <Typography variant="body2" sx={{ mb: 2, textAlign: "center", color: TEXT_MAIN }}>
+                        {t.rich("messageComposition.audioLengthsBarChart.description", {
+                          button: label => openModalSpan(label, t, "messageComposition.audioLengthsBarChart")
+                        })}
+                      </Typography>
+                      <ChartContainer type={ChartType.AudioLengthsBarChart} data={graphData} dataSourceValue={dataSourceValue} />
+                    </Box>
+                  )}
+                  {graphData.emojiDistribution && (
+                    <Box sx={{ ...feedbackPlotPanelSx, display: "flex", flexDirection: "column", alignItems: "stretch" }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, textAlign: "center", color: TEXT_MAIN }}>
+                        {t("messageComposition.emojiBarChart.title")}
+                      </Typography>
+                      <Typography variant="body2" sx={{ mb: 2, textAlign: "center", color: TEXT_MAIN }}>
+                        {t.rich("messageComposition.emojiBarChart.description", {
+                          button: label => openModalSpan(label, t, "messageComposition.emojiBarChart")
+                        })}
+                      </Typography>
+                      <ChartContainer type={ChartType.EmojiBarChart} data={graphData} dataSourceValue={dataSourceValue} />
+                    </Box>
+                  )}
+                </Stack>
+              </Box>
             </Box>
           )}
 
-          <Stack direction="row" spacing={2} sx={{ mt: 2, mb: 2, justifyContent: "center" }}>
-            <Button variant="contained" size="large" onClick={openScientificModal}>
-              {t("moreScientificPlots")}
-            </Button>
-            {onDownloadPdf && (
+          <Box sx={feedbackChartPaletteOuterSx}>
+            <Box aria-hidden sx={{ display: "flex", height: 4, width: "100%" }}>
+              <Box sx={{ flex: 1, bgcolor: FEEDBACK_SECTION_CHART_SENT }} />
+              <Box sx={{ flex: 1, bgcolor: FEEDBACK_SECTION_CHART_RECEIVED }} />
+            </Box>
+            <Box sx={feedbackChartPaletteHeaderStripSx}>
+              <Stack direction="row" spacing={1.25} alignItems="center" justifyContent="center" sx={{ mb: 1 }}>
+                <Box sx={feedbackChartPaletteIconBoxSx}>
+                  <HubOutlinedIcon sx={{ fontSize: 26, color: FEEDBACK_SECTION_CHART_SENT }} />
+                </Box>
+                <Box sx={{ textAlign: "left" }}>
+                  <Typography
+                    variant="overline"
+                    sx={{
+                      display: "block",
+                      letterSpacing: "0.2em",
+                      fontWeight: 700,
+                      fontSize: "0.65rem",
+                      color: FEEDBACK_SECTION_CHART_SENT
+                    }}
+                  >
+                    {ii("cardOverline")}
+                  </Typography>
+                  <Typography
+                    variant="h3"
+                    component="h2"
+                    sx={{
+                      fontWeight: 800,
+                      letterSpacing: "-0.03em",
+                      color: TEXT_MAIN,
+                      fontSize: { xs: "1.45rem", sm: "1.85rem" },
+                      lineHeight: 1.2
+                    }}
+                  >
+                    {ii("title")}
+                  </Typography>
+                </Box>
+              </Stack>
+              <Typography variant="body2" sx={{ textAlign: "center", color: TEXT_MUTED, maxWidth: 480, mx: "auto", lineHeight: 1.55 }}>
+                {ii("cardIntro")}
+              </Typography>
+            </Box>
+
+            <Box sx={feedbackSectionBodySx}>
+              <Stack
+                spacing={3}
+                divider={
+                  showDetailedAudioFeedback ? (
+                    <Divider flexItem sx={{ borderColor: alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22) }} />
+                  ) : undefined
+                }
+                sx={{ width: "100%" }}
+              >
+                <Box sx={{ ...feedbackPlotPanelSx, display: "flex", flexDirection: "column", alignItems: "stretch" }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, textAlign: "center", color: TEXT_MAIN }}>
+                    {ii("animatedIntensityPolarChart.title")}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 2, textAlign: "center", color: TEXT_MAIN, px: { xs: 0, sm: 1 } }}>
+                    {ii.rich("animatedIntensityPolarChart.description", {
+                      button: label => openModalSpan(label, ii, "animatedIntensityPolarChart", FEEDBACK_SECTION_CHART_SENT)
+                    })}
+                  </Typography>
+                  <ChartContainer type={ChartType.AnimatedIntensityPolarChart} data={graphData} dataSourceValue={dataSourceValue} />
+                </Box>
+                {showDetailedAudioFeedback && (
+                  <Box sx={{ ...feedbackPlotPanelSx, display: "flex", flexDirection: "column", alignItems: "stretch" }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, textAlign: "center", color: TEXT_MAIN }}>
+                      {ii("animatedSecondsPerChatBarChart.title")}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 2, textAlign: "center", color: TEXT_MAIN, px: { xs: 0, sm: 1 } }}>
+                      {ii.rich("animatedSecondsPerChatBarChart.description", {
+                        button: label => openModalSpan(label, ii, "animatedSecondsPerChatBarChart", FEEDBACK_SECTION_CHART_SENT)
+                      })}
+                    </Typography>
+                    <ChartContainer type={ChartType.AnimatedSecondsPerChatBarChart} data={graphData} dataSourceValue={dataSourceValue} />
+                  </Box>
+                )}
+              </Stack>
+            </Box>
+          </Box>
+
+          <ChatSummaryCarousel data={graphData} />
+
+          <ChatActivitySection graphData={graphData} />
+
+          <LifeEventActivitySection graphData={graphData} />
+
+          {showContentFeedback && hasContentData && (
+            <Box sx={feedbackChartPaletteOuterSx}>
+              <Box aria-hidden sx={{ display: "flex", height: 4, width: "100%" }}>
+                <Box sx={{ flex: 1, bgcolor: FEEDBACK_SECTION_CHART_SENT }} />
+                <Box sx={{ flex: 1, bgcolor: FEEDBACK_SECTION_CHART_RECEIVED }} />
+              </Box>
+              <Box sx={feedbackChartPaletteHeaderStripSx}>
+                <Stack direction="row" spacing={1.25} alignItems="center" justifyContent="center" sx={{ mb: 1 }}>
+                  <Box sx={feedbackChartPaletteIconBoxSx}>
+                    <PublicOutlinedIcon sx={{ fontSize: 26, color: FEEDBACK_SECTION_CHART_SENT }} />
+                  </Box>
+                  <Box sx={{ textAlign: "left" }}>
+                    <Typography
+                      variant="overline"
+                      sx={{
+                        display: "block",
+                        letterSpacing: "0.2em",
+                        fontWeight: 700,
+                        fontSize: "0.65rem",
+                        color: FEEDBACK_SECTION_CHART_SENT
+                      }}
+                    >
+                      {socialT("cardOverline")}
+                    </Typography>
+                    <Typography
+                      variant="h3"
+                      component="h2"
+                      sx={{
+                        fontWeight: 800,
+                        letterSpacing: "-0.03em",
+                        color: TEXT_MAIN,
+                        fontSize: { xs: "1.45rem", sm: "1.85rem" },
+                        lineHeight: 1.2
+                      }}
+                    >
+                      {socialT("title")}
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Typography variant="body2" sx={{ textAlign: "center", color: TEXT_MUTED, maxWidth: 520, mx: "auto", lineHeight: 1.55 }}>
+                  {socialT("intro")}
+                </Typography>
+              </Box>
+              <Box sx={feedbackSectionBodySx}>
+                <Stack
+                  spacing={3}
+                  divider={<Divider flexItem sx={{ borderColor: alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22) }} />}
+                  sx={{ width: "100%" }}
+                >
+                  <Box sx={{ ...feedbackPlotPanelSx, display: "flex", flexDirection: "column", alignItems: "stretch" }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, textAlign: "center", color: TEXT_MAIN }}>
+                      {socialT("timelineTitle")}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 2, textAlign: "center", color: TEXT_MUTED }}>
+                      {socialT("timelineIntro")}
+                    </Typography>
+                    <ChartContainer type={ChartType.SocialEngagementTimelineChart} data={graphData} dataSourceValue={dataSourceValue} />
+                  </Box>
+                  <Box sx={{ ...feedbackPlotPanelSx, display: "flex", flexDirection: "column", alignItems: "stretch" }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, textAlign: "center", color: TEXT_MAIN }}>
+                      {socialT("styleTitle")}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 2, textAlign: "center", color: TEXT_MUTED }}>
+                      {socialT("styleIntro")}
+                    </Typography>
+                    <ChartContainer type={ChartType.EngagementStyleChart} data={graphData} dataSourceValue={dataSourceValue} />
+                  </Box>
+                  {graphData.postStats && (
+                    <Box sx={{ ...feedbackPlotPanelSx, display: "flex", flexDirection: "column", alignItems: "stretch" }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, textAlign: "center", color: TEXT_MAIN }}>
+                        {socialT("postsTitle")}
+                      </Typography>
+                      <ChartContainer type={ChartType.PostActivityChart} data={graphData} dataSourceValue={dataSourceValue} />
+                    </Box>
+                  )}
+                  {graphData.commentStats && (
+                    <Box sx={{ ...feedbackPlotPanelSx, display: "flex", flexDirection: "column", alignItems: "stretch" }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, textAlign: "center", color: TEXT_MAIN }}>
+                        {socialT("commentsTitle")}
+                      </Typography>
+                      <ChartContainer type={ChartType.CommentActivityChart} data={graphData} dataSourceValue={dataSourceValue} />
+                    </Box>
+                  )}
+                  {graphData.reactionStats && (
+                    <Box sx={{ ...feedbackPlotPanelSx, display: "flex", flexDirection: "column", alignItems: "stretch" }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, textAlign: "center", color: TEXT_MAIN }}>
+                        {socialT("reactionsTitle")}
+                      </Typography>
+                      <ChartContainer type={ChartType.ReactionBreakdownChart} data={graphData} dataSourceValue={dataSourceValue} />
+                    </Box>
+                  )}
+                </Stack>
+              </Box>
+            </Box>
+          )}
+
+          {onDownloadPdf && (
+            <Stack direction="row" spacing={2} sx={{ pt: 1, pb: 1, justifyContent: "center" }}>
               <Button
                 variant="outlined"
                 size="large"
                 startIcon={isGeneratingPdf ? <CircularProgress size={20} /> : <PictureAsPdfIcon />}
                 onClick={onDownloadPdf}
                 disabled={isGeneratingPdf}
+                sx={feedbackChartControlOutlinedButtonSx}
               >
                 {t("downloadPdf")}
               </Button>
-            )}
-          </Stack>
-
-          <Box className="scientific-charts-pdf" sx={{ display: "none" }}>
-            {renderScientificCharts()}
-          </Box>
+            </Stack>
+          )}
         </Stack>
       </AccordionDetails>
 
-      {/* ChartExplanationModal (remains here, as it's used by the charts inside the new modal) */}
       <ChartExplanationModal
         open={isModalOpen}
         onClose={closeExplanationModal}
@@ -412,21 +413,6 @@ export default function DataSourceFeedbackSection({
         contentHtml={modalContent?.contentHtml || ""}
         imageSrc={modalContent?.imageSrc}
       />
-
-      {/* MoreChartsModal (remains here) */}
-      {currentSection && (
-        <MoreChartsModal
-          open={isSectionModalOpen}
-          onClose={closeSectionModal}
-          graphData={graphData}
-          section={currentSection}
-          showDetailedAudioFeedback={showDetailedAudioFeedback}
-        />
-      )}
-
-      <FullSizeModal open={isScientificModalOpen} onClose={closeScientificModal}>
-        {renderScientificCharts()}
-      </FullSizeModal>
     </Accordion>
   );
 }

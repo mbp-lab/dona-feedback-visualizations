@@ -135,7 +135,7 @@ export interface GraphData {
   slidingWindowMeanDailyWords: DailySentReceivedPoint[];
   slidingWindowMeanDailySeconds: DailySentReceivedPoint[];
   dailySentHours: DailyHourPoint[];
-  // New: Sent hours per conversation for DailyActivityChart selection
+  // Sent hours per conversation for day-parts charts
   dailySentHoursPerConversation: DailyHourPoint[][];
   dailyReceivedHours: DailyHourPoint[];
   answerTimes: AnswerTimePoint[];

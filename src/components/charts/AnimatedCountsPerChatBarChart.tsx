@@ -1,12 +1,14 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import { alpha } from "@mui/material/styles";
 import { BarElement, CategoryScale, Chart as ChartJS, ChartDataset, Legend, LinearScale, Tooltip } from "chart.js";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useRef, useState } from "react";
 import { Bar } from "react-chartjs-2";
 
 import useChartPattern from "@/hooks/useChartPattern";
-import { CHART_BOX_PROPS, CHART_COLORS, CHART_LAYOUT, COMMON_CHART_OPTIONS } from "@components/charts/chartConfig";
+import { CHART_BOX_PROPS, CHART_LAYOUT, COMMON_CHART_OPTIONS } from "@components/charts/chartConfig";
+import { FEEDBACK_SECTION_CHART_SENT } from "@components/charts/feedbackSectionTheme";
 import DownloadButtons from "@components/charts/DownloadButtons";
 import SliderWithButtons from "@components/charts/SliderWithButtons";
 import { SentReceivedPoint } from "@models/graphData";
@@ -24,8 +26,8 @@ const AnimatedCountsBarChart: React.FC<AnimatedCountsBarChartProps> = ({ dataMon
   const container_name = `chart-wrapper-${CHART_NAME}`;
 
   const property = mode === "text" ? "Words" : "Seconds";
-  const patternColor = useChartPattern(CHART_COLORS.primaryLight, CHART_COLORS.primary);
-  const color = mode === "text" ? CHART_COLORS.primary : patternColor;
+  const patternColor = useChartPattern(alpha(FEEDBACK_SECTION_CHART_SENT, 0.4), FEEDBACK_SECTION_CHART_SENT);
+  const color = mode === "text" ? FEEDBACK_SECTION_CHART_SENT : patternColor;
   const labelTexts = useTranslations("feedback.chartLabels");
   const chartTexts = useTranslations(`feedback.interactionIntensity.animated${property}PerChatBarChart`);
 
@@ -98,7 +100,12 @@ const AnimatedCountsBarChart: React.FC<AnimatedCountsBarChartProps> = ({ dataMon
         </Box>
       </Box>
 
-      <SliderWithButtons value={currentFrame} marks={labels.map((label, index) => ({ value: index, label }))} setCurrentFrame={setCurrentFrame} />
+      <SliderWithButtons
+        value={currentFrame}
+        marks={labels.map((label, index) => ({ value: index, label }))}
+        setCurrentFrame={setCurrentFrame}
+        useFeedbackChartPalette
+      />
     </Box>
   );
 };

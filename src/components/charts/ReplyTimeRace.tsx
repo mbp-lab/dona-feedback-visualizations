@@ -1,15 +1,30 @@
 import React, { useMemo } from "react";
 import { Box, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { ReplyTimeRacer } from "@models/graphData";
 import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
 import SmartphoneIcon from "@mui/icons-material/Smartphone";
 import DownloadButtons from "@components/charts/DownloadButtons";
+import {
+  FEEDBACK_SECTION_CHART_RECEIVED,
+  FEEDBACK_SECTION_CHART_SENT,
+  FEEDBACK_SECTION_CHART_SENT_HOVER,
+  FEEDBACK_SECTION_TEXT_MAIN as TEXT_MAIN,
+  FEEDBACK_SECTION_TEXT_MUTED as TEXT_MUTED
+} from "@components/charts/feedbackSectionTheme";
 
 interface ReplyTimeRaceProps {
   raceData?: ReplyTimeRacer[];
 }
 
-const laneColors = ["#4CAF50", "#2196F3", "#FF9800", "#E91E63", "#9C27B0"];
+/** Coral / teal lane fills (cycles for many chats). */
+const laneColors = [
+  FEEDBACK_SECTION_CHART_SENT,
+  FEEDBACK_SECTION_CHART_RECEIVED,
+  FEEDBACK_SECTION_CHART_SENT_HOVER,
+  alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.92),
+  FEEDBACK_SECTION_CHART_SENT
+] as const;
 
 export default function ReplyTimeRace({ raceData }: ReplyTimeRaceProps) {
   const safeRaceData = raceData || [];
@@ -24,7 +39,7 @@ export default function ReplyTimeRace({ raceData }: ReplyTimeRaceProps) {
   }, [safeRaceData]);
 
   if (safeRaceData.length === 0) {
-    return <Typography>Not enough data to show reply time comparison.</Typography>;
+    return <Typography sx={{ color: TEXT_MUTED, textAlign: "center" }}>Not enough data to show reply time comparison.</Typography>;
   }
 
   return (
@@ -37,10 +52,13 @@ export default function ReplyTimeRace({ raceData }: ReplyTimeRaceProps) {
         justifyContent: "center",
         p: 2,
         position: "relative",
-        bgcolor: "#FFFFFF"
+        bgcolor: "transparent",
+        borderRadius: 2,
+        border: "none",
+        boxShadow: "none"
       }}
     >
-      <Box sx={{ position: "absolute", top: 0, right: 0, zIndex: 100 }}>
+      <Box sx={{ position: "absolute", top: 8, right: 8, zIndex: 100 }}>
         <DownloadButtons chartId={CHART_ID} fileNamePrefix={FILE_NAME} />
       </Box>
 
@@ -60,19 +78,19 @@ export default function ReplyTimeRace({ raceData }: ReplyTimeRaceProps) {
 
           return (
             <Box key={index}>
-              <Typography variant="body2" sx={{ fontWeight: "bold", textAlign: "left", mb: 0.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 700, textAlign: "left", mb: 0.5, color: TEXT_MAIN }}>
                 {racer.name}
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                {/* Track lane */}
                 <Box
                   sx={{
                     flex: 1,
                     position: "relative",
                     height: 40,
-                    bgcolor: "#f0f0f0",
+                    bgcolor: alpha(TEXT_MAIN, 0.06),
                     borderRadius: 2,
-                    overflow: "hidden"
+                    overflow: "hidden",
+                    border: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.2)}`
                   }}
                 >
                   <Box
@@ -82,8 +100,8 @@ export default function ReplyTimeRace({ raceData }: ReplyTimeRaceProps) {
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      borderBottom: "2px dashed #ddd",
-                      borderTop: "2px dashed #ddd",
+                      borderBottom: `2px dashed ${alpha(TEXT_MAIN, 0.1)}`,
+                      borderTop: `2px dashed ${alpha(TEXT_MAIN, 0.1)}`,
                       pointerEvents: "none"
                     }}
                   />
@@ -92,23 +110,29 @@ export default function ReplyTimeRace({ raceData }: ReplyTimeRaceProps) {
                     sx={{
                       height: "100%",
                       width: `${barWidth}%`,
-                      background: `linear-gradient(90deg, ${color}44 0%, ${color} 100%)`,
+                      bgcolor: color,
                       borderRadius: 2,
                       transition: "width 0.6s ease-out",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "flex-end",
-                      pr: 0.5
+                      pr: 0.5,
+                      boxShadow: `inset 0 1px 0 ${alpha("#ffffff", 0.22)}`
                     }}
                   >
-                    <DirectionsRunIcon sx={{ fontSize: 28, color: "#fff", filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.3))" }} />
+                    <DirectionsRunIcon
+                      sx={{
+                        fontSize: 28,
+                        color: "#fff",
+                        filter: "drop-shadow(0 1px 2px rgba(15,23,42,0.25))"
+                      }}
+                    />
                   </Box>
                 </Box>
 
-                {/* Time and phone icon outside the track */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}>
-                  <SmartphoneIcon sx={{ fontSize: 22, color: "#333" }} />
-                  <Typography variant="caption" sx={{ fontWeight: "bold", color: "#555", whiteSpace: "nowrap" }}>
+                  <SmartphoneIcon sx={{ fontSize: 22, color: TEXT_MUTED }} />
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: TEXT_MAIN, whiteSpace: "nowrap" }}>
                     {racer.formattedTime}
                   </Typography>
                 </Box>
@@ -118,7 +142,7 @@ export default function ReplyTimeRace({ raceData }: ReplyTimeRaceProps) {
         })}
       </Box>
 
-      <Typography variant="caption" sx={{ mt: 1.5, color: "#777", fontStyle: "italic", textAlign: "center" }}>
+      <Typography variant="caption" sx={{ mt: 1.5, color: TEXT_MUTED, fontStyle: "italic", textAlign: "center", lineHeight: 1.5 }}>
         Each bar represents your median reply time in that chat. A longer bar means a faster reply.
       </Typography>
     </Box>

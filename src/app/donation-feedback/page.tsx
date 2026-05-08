@@ -6,6 +6,7 @@ import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { alpha } from "@mui/material/styles";
 import { toPng } from "html-to-image";
 import jsPDF from "jspdf";
 import { useLocale, useTranslations } from "next-intl";
@@ -16,12 +17,25 @@ import { useRichTranslations } from "@/hooks/useRichTranslations";
 import { MainTitle, RichText } from "@/styles/StyledTypography";
 import DataSourceFeedbackSection from "@components/DataSourceFeedbackSection";
 import LoadingSpinner from "@components/LoadingSpinner";
+import {
+  FEEDBACK_SECTION_CHART_RECEIVED,
+  FEEDBACK_SECTION_CHART_SENT,
+  FEEDBACK_SECTION_CHART_SENT_HOVER,
+  FEEDBACK_SECTION_TEXT_MAIN as FB_TEXT_MAIN
+} from "@components/charts/feedbackSectionTheme";
 import { DataSourceValue } from "@models/processed";
 
 import { fetchOrComputeGraphDataByDonationId, getDonationId } from "./actions";
 
 const isFeedbackSurveyEnabled = process.env.NEXT_PUBLIC_FEEDBACK_SURVEY_ENABLED === "true";
 const feedbackSurveyLink = process.env.NEXT_PUBLIC_FEEDBACK_SURVEY_LINK;
+
+const feedbackInfoAlertSx = {
+  bgcolor: alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.08),
+  border: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.35)}`,
+  color: FB_TEXT_MAIN,
+  "& .MuiAlert-icon": { color: FEEDBACK_SECTION_CHART_SENT }
+} as const;
 
 export default function DonationFeedbackPage() {
   const actions = useTranslations("actions");
@@ -111,16 +125,11 @@ export default function DonationFeedbackPage() {
         });
       });
 
-      // 3) Hide all standalone buttons (e.g. "See more detailed plots")
+      // 3) Hide all standalone buttons (e.g. download PDF)
       element.querySelectorAll<HTMLElement>("button, a.MuiButton-root").forEach(btn => {
         if (btn.closest(".MuiAccordionSummary-root")) return;
         if (btn.closest(".react-swipeable-view-container")) return;
         hide(btn);
-      });
-
-      // 4) Reveal the hidden scientific charts so they appear in the PDF
-      element.querySelectorAll<HTMLElement>(".scientific-charts-pdf").forEach(section => {
-        save(section, { display: "block" });
       });
 
       // Trigger resize so Chart.js instances render at their correct dimensions
@@ -129,7 +138,7 @@ export default function DonationFeedbackPage() {
       // Wait for layout to settle and charts to render
       await new Promise(r => setTimeout(r, 1000));
 
-      // 5) Collect atomic blocks BEFORE capture (same DOM state toPng will clone)
+      // 4) Collect atomic blocks BEFORE capture (same DOM state toPng will clone)
       const containerRect = element.getBoundingClientRect();
       const domHeight = element.scrollHeight;
       const atomicBlocks: { top: number; bottom: number }[] = [];
@@ -147,13 +156,10 @@ export default function DonationFeedbackPage() {
       element.querySelectorAll<HTMLElement>(".react-swipeable-view-container > div").forEach(addBlock);
       element.querySelectorAll<HTMLElement>(".MuiAlert-root").forEach(addBlock);
       element.querySelectorAll<HTMLElement>(".MuiCard-root").forEach(addBlock);
-      element.querySelectorAll<HTMLElement>(".scientific-charts-pdf .MuiStack-root > *").forEach(el => {
-        if (el.getBoundingClientRect().height > 30) addBlock(el);
-      });
 
       atomicBlocks.sort((a, b) => a.top - b.top);
 
-      // 6) Capture the full expanded content as a high-res PNG
+      // 5) Capture the full expanded content as a high-res PNG
       const pixelRatio = 2;
       const dataUrl = await toPng(element, {
         backgroundColor: "#ffffff",
@@ -171,7 +177,7 @@ export default function DonationFeedbackPage() {
       // Proportional mapping from DOM-Y to image-Y to handle any height drift
       const domToImg = img.height / domHeight;
 
-      // 7) Build multi-page PDF, never splitting an atomic block
+      // 6) Build multi-page PDF, never splitting an atomic block
       const pdfWidthMm = 210;
       const marginMm = 10;
       const contentWidthMm = pdfWidthMm - 2 * marginMm;
@@ -268,10 +274,18 @@ export default function DonationFeedbackPage() {
           textAlign: "center"
         }}
       >
-        <MainTitle variant="h5">{feedback.t("title")}</MainTitle>
+        <MainTitle variant="h5" sx={{ fontWeight: 700, color: FB_TEXT_MAIN, letterSpacing: "-0.02em" }}>
+          {feedback.t("title")}
+        </MainTitle>
 
         {/* Loading indicator */}
-        {isLoading && <LoadingSpinner message={feedback.t("loading")} />}
+        {isLoading && (
+          <LoadingSpinner
+            message={feedback.t("loading")}
+            spinnerSx={{ color: FEEDBACK_SECTION_CHART_SENT }}
+            alertSx={feedbackInfoAlertSx}
+          />
+        )}
 
         {/* Error fetching required data*/}
         {!isLoading && !feedbackData && (
@@ -283,7 +297,7 @@ export default function DonationFeedbackPage() {
         {feedbackData && (
           <>
             <Box ref={feedbackContentRef} sx={{ width: "100%" }}>
-              <Alert severity="info">
+              <Alert severity="info" sx={feedbackInfoAlertSx}>
                 <Typography variant="body1">{feedback.t("importantMessage.title")}</Typography>
                 <Typography variant="body2">{feedback.rich("importantMessage.disclaimer")}</Typography>
               </Alert>
@@ -303,7 +317,15 @@ export default function DonationFeedbackPage() {
               <RichText sx={{ py: 2, textAlign: "center" }}>{feedback.t("thanks")}</RichText>
             </Box>
 
-            <Button variant="contained" onClick={handleContinue} sx={{ mt: 2 }}>
+            <Button
+              variant="contained"
+              onClick={handleContinue}
+              sx={{
+                mt: 2,
+                bgcolor: FEEDBACK_SECTION_CHART_SENT,
+                "&:hover": { bgcolor: FEEDBACK_SECTION_CHART_SENT_HOVER }
+              }}
+            >
               {actions("next")}
             </Button>
           </>

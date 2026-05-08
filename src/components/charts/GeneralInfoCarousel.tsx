@@ -1,192 +1,508 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Typography, Button, useTheme } from '@mui/material';
-import SwipeableViews from 'react-swipeable-views';
-import { GraphData } from '@models/graphData';
-import { ceil, floor } from 'lodash';
+import React, { useId, useState, useMemo } from "react";
+import { Box, Button, Typography, useTheme } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import SwipeableViews from "react-swipeable-views";
+import { useLocale, useTranslations } from "next-intl";
 
-interface GeneralInfoCarouselProps {
-    data: GraphData;
+import { StatisticsSummaryPanel } from "@components/StatisticsCard";
+import WritingActivityHeatmapSlide from "@components/charts/WritingActivityHeatmapSlide";
+import { GraphData } from "@models/graphData";
+import {
+  FEEDBACK_SECTION_CHART_RECEIVED,
+  FEEDBACK_SECTION_CHART_RECEIVED_HOVER,
+  FEEDBACK_SECTION_CHART_SENT,
+  FEEDBACK_SECTION_CHART_SENT_HOVER,
+  FEEDBACK_SECTION_SURFACE as SURFACE,
+  FEEDBACK_SECTION_TEXT_MAIN as TEXT_MAIN,
+  FEEDBACK_SECTION_TEXT_MUTED as TEXT_MUTED,
+  feedbackChartPaletteOuterSx
+} from "@components/charts/feedbackSectionTheme";
+
+/** *The Hobbit* (~95k words) — comparison when sent word count is below {@link WORDS_LOTR_THRESHOLD}. */
+const HOBBIT_REFERENCE_WORDS = 95_000;
+/** Approximate word count for *The Fellowship of the Ring* (first LOTR volume) — comparison from this count upward. */
+const FELLOWSHIP_REFERENCE_WORDS = 187_790;
+/** Use Hobbit baseline for X &lt; this value; Fellowship baseline for X ≥ this value. */
+const WORDS_LOTR_THRESHOLD = 100_000;
+/** Assumed typing speed for the “hours to type” estimate. */
+const TYPING_WPM = 40;
+
+const PARCHMENT_BG = "linear-gradient(148deg, #faf6ec 0%, #f0e6d0 38%, #e8dcc0 72%, #e3d4b4 100%)";
+const BOOK_INK = "#3d2d22";
+const BOOK_COVER_EDGE = "#2a1d14";
+
+/** Open-book decoration: parchment + title page; ring (Fellowship) or mountains (Hobbit) on the right page. */
+function TolkienOpenBookIllustration({
+  variant,
+  ariaLabel,
+  title,
+  author
+}: {
+  variant: "hobbit" | "fellowship";
+  ariaLabel: string;
+  title: string;
+  author: string;
+}) {
+  const uid = useId().replace(/:/g, "");
+  const gradGold = `frg-${uid}`;
+  const gradSheen = `frs-${uid}`;
+  const parchmentMid = "#e8dcc0";
+  const rule = alpha(BOOK_INK, 0.12);
+
+  const rightDecoration =
+    variant === "fellowship" ? (
+      <Box
+        component="svg"
+        viewBox="0 0 100 72"
+        xmlns="http://www.w3.org/2000/svg"
+        sx={{ width: 100, height: "auto", flexShrink: 0 }}
+        aria-hidden
+      >
+        <defs>
+          <radialGradient id={gradGold} cx="42%" cy="40%" r="65%">
+            <stop offset="0%" stopColor="#fffef5" />
+            <stop offset="35%" stopColor="#e8c547" />
+            <stop offset="70%" stopColor="#b8860b" />
+            <stop offset="100%" stopColor="#6b5310" />
+          </radialGradient>
+          <linearGradient id={gradSheen} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
+            <stop offset="45%" stopColor="#ffffff" stopOpacity="0" />
+            <stop offset="100%" stopColor="#000000" stopOpacity="0.12" />
+          </linearGradient>
+        </defs>
+        <ellipse cx="50" cy="38" rx="34" ry="24" fill={`url(#${gradGold})`} stroke="#5c4810" strokeWidth="1.1" />
+        <ellipse cx="50" cy="38" rx="34" ry="24" fill={`url(#${gradSheen})`} stroke="none" />
+        <ellipse cx="50" cy="38" rx="14" ry="10" fill={parchmentMid} stroke={alpha("#5c4810", 0.45)} strokeWidth="0.85" />
+        <ellipse cx="50" cy="38" rx="34" ry="24" fill="none" stroke={alpha("#fff", 0.35)} strokeWidth="0.6" opacity="0.9" />
+      </Box>
+    ) : (
+      <Box
+        component="svg"
+        viewBox="0 0 100 72"
+        xmlns="http://www.w3.org/2000/svg"
+        sx={{ width: 100, height: "auto", flexShrink: 0, opacity: 0.92 }}
+        aria-hidden
+      >
+        <circle cx="76" cy="22" r="7" fill="none" stroke={BOOK_INK} strokeWidth="0.9" opacity="0.65" />
+        <polygon points="50,22 62,48 38,48" fill="none" stroke={BOOK_INK} strokeWidth="1.05" strokeLinejoin="round" />
+        <polygon points="28,52 42,32 56,52" fill="none" stroke={BOOK_INK} strokeWidth="1.05" strokeLinejoin="round" />
+        <polygon points="58,50 72,36 86,52" fill="none" stroke={BOOK_INK} strokeWidth="1" strokeLinejoin="round" />
+        <path d="M 18 58 Q 50 48 82 58" fill="none" stroke={BOOK_INK} strokeWidth="0.85" strokeDasharray="3 3" opacity="0.7" />
+      </Box>
+    );
+
+  return (
+    <Box
+      role="img"
+      aria-label={ariaLabel}
+      sx={{
+        width: "100%",
+        maxWidth: 440,
+        mx: "auto",
+        mt: 2
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "stretch",
+          justifyContent: "center",
+          filter: `drop-shadow(0 14px 24px ${alpha("#0f172a", 0.12)})`
+        }}
+      >
+        <Box sx={{ width: { xs: 8, sm: 10 }, bgcolor: BOOK_COVER_EDGE, borderRadius: "8px 0 0 8px", minHeight: 204 }} />
+        <Box
+          sx={{
+            display: "flex",
+            flex: 1,
+            minHeight: 204,
+            maxWidth: 408,
+            overflow: "hidden",
+            borderRadius: "4px",
+            border: `1px solid ${alpha(BOOK_INK, 0.22)}`
+          }}
+        >
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              background: PARCHMENT_BG,
+              px: 1.5,
+              py: 2,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              gap: 1.25,
+              borderRight: `1px solid ${alpha(BOOK_INK, 0.12)}`,
+              boxShadow: `inset -8px 0 16px ${alpha("#000", 0.05)}`
+            }}
+          >
+            {[0, 1, 2, 3, 4].map(i => (
+              <Box key={i} sx={{ height: 1, bgcolor: rule, opacity: 0.85, width: "88%", mx: "auto", borderRadius: 1 }} />
+            ))}
+          </Box>
+          <Box
+            sx={{
+              width: 12,
+              flexShrink: 0,
+              background: `linear-gradient(90deg, ${alpha("#000", 0.14)} 0%, ${alpha("#000", 0.04)} 45%, ${alpha("#000", 0.14)} 100%)`,
+              boxShadow: `inset 0 0 10px ${alpha("#000", 0.12)}`
+            }}
+          />
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              background: PARCHMENT_BG,
+              px: { xs: 1.25, sm: 1.75 },
+              py: 1.75,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              boxShadow: `inset 8px 0 16px ${alpha("#000", 0.05)}`
+            }}
+          >
+            <Typography
+              sx={{
+                fontFamily: '"Georgia", "Times New Roman", serif',
+                fontWeight: 700,
+                fontSize: { xs: "0.72rem", sm: "0.82rem" },
+                color: "#1f1410",
+                letterSpacing: "0.03em",
+                lineHeight: 1.35,
+                textShadow: "0 1px 0 rgba(255,255,255,0.35)",
+                mb: 0.75
+              }}
+            >
+              {title}
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: '"Georgia", "Times New Roman", serif',
+                fontSize: { xs: "0.68rem", sm: "0.76rem" },
+                color: alpha("#1f1410", 0.88),
+                fontStyle: "italic",
+                mb: 1.25
+              }}
+            >
+              {author}
+            </Typography>
+            {rightDecoration}
+          </Box>
+        </Box>
+        <Box sx={{ width: { xs: 8, sm: 10 }, bgcolor: BOOK_COVER_EDGE, borderRadius: "0 8px 8px 0", minHeight: 204 }} />
+      </Box>
+    </Box>
+  );
 }
 
-export default function GeneralInfoCarousel({ data }: GeneralInfoCarouselProps) {
-    const theme = useTheme();
-    const [activeStep, setActiveStep] = useState(0);
-    const [autoPlay, setAutoPlay] = useState(true);
-    const maxSteps = 6;
+interface GeneralInfoCarouselProps {
+  data: GraphData;
+  isWhatsApp?: boolean;
+}
 
-    const {
-        sentMessages,
-        sentWords,
-        activeDays,
-        totalDays,
-        activeDaysPercentage,
-        wordsPerMessage,
-        peakDay
-    } = useMemo(() => {
-        return {
-            sentMessages: data.basicStatistics?.messagesTotal?.allMessages?.sent ?? 0,
-            sentWords: data.basicStatistics?.wordsTotal?.sent ?? 0,
-            activeDays: data.generalInfoStats?.activityStats?.activeDays ?? 0,
-            totalDays: data.generalInfoStats?.activityStats?.totalDays ?? 0,
-            activeDaysPercentage: data.generalInfoStats?.activityStats?.activityPercentage ?? 0,
-            wordsPerMessage: data.generalInfoStats?.avgWordsPerSentMessage ?? 0,
-            peakDay: data.generalInfoStats?.peakDayStats ?? { date: "N/A", activeHours: 0, totalMessagesExchanged: 0, topChat: "N/A" },
-        };
-    }, [data]);
+export default function GeneralInfoCarousel({ data, isWhatsApp = false }: GeneralInfoCarouselProps) {
+  const theme = useTheme();
+  const locale = useLocale();
+  const t = useTranslations("feedback.generalInfoCarousel");
+  const tNav = useTranslations("feedback.comparisonCarousel");
+  const [activeStep, setActiveStep] = useState(0);
+  const maxSteps = 5;
 
-    const {infoWord} = useMemo(() => {
-        let infoWord = "";
-
-        if (sentWords <= 2000) {infoWord = "That is almost the length of a speech like \n“I Have a Dream” by Martin Luther King Jr. (~1,6k words)";}
-        else if (sentWords <= 10000) {infoWord = "That is roughly the length of a short story like \n“The Tell-Tale Heart” by Edgar Allan Poe (~2.1k words)";}
-        else if (sentWords <= 40000) {infoWord = "That is almost the length of a novella like \n“Animal Farm” by George Orwell (~30k words) \nor Kafka's Metamorphosis (~22k words)";}
-        else if (sentWords <= 70000) {infoWord = "That is roughly the length of a short novel like \nThe Great Gatsby (~47k words) or A Clockwork Orange (~60k words)!";}
-        else if (sentWords <= 100000) {infoWord = "That is roughly the length of a standard novel like \nHarry Potter and the Philosopher's Stone (~76k words) \nor The Hobbit (~95k words)!";}
-        else {infoWord = "That is almost the length of a novel on the scale of \nMoby Dick (~210k words), Anna Karenina (~350k words) \nor Les Misérables (~655k words)";}
-
-        return { infoWord};
-    }, [sentMessages, sentWords]);
-
-    const handleNext = () => { setAutoPlay(false); setActiveStep((prev) => (prev + 1) % maxSteps); };
-    const handleBack = () => { setAutoPlay(false); setActiveStep((prev) => (prev - 1 + maxSteps) % maxSteps); };
-    const handleStepChange = (step: number) => { setAutoPlay(false); setActiveStep(step); };
-
-    const slideBoxStyles = {
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        height: 400, p: 4, textAlign: 'center',
-        background: 'linear-gradient(0deg,rgba(128, 194, 255, 0.75) 0%, rgba(255, 255, 255, 1) 75%)', color: 'navy',
+  const { sentWords, activeDays, totalDays, activeDaysPercentage, wordsPerMessage } = useMemo(() => {
+    return {
+      sentWords: data.basicStatistics?.wordsTotal?.sent ?? 0,
+      activeDays: data.generalInfoStats?.activityStats?.activeDays ?? 0,
+      totalDays: data.generalInfoStats?.activityStats?.totalDays ?? 0,
+      activeDaysPercentage: data.generalInfoStats?.activityStats?.activityPercentage ?? 0,
+      wordsPerMessage: data.generalInfoStats?.avgWordsPerSentMessage ?? 0
     };
+  }, [data]);
 
-    return (
-        <Box sx={{ maxWidth: 850, mx: 'auto', position: 'relative', bgcolor: 'background.paper', borderRadius: 4, boxShadow: 4, overflow: 'hidden' }}>
-            <SwipeableViews
-                axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-                index={activeStep}
-                onChangeIndex={handleStepChange}
-                enableMouseEvents
-            >
-                {/* slide 1: header */}
-                <Box key="header" sx={slideBoxStyles}>
-                    <Typography variant="h3" sx={{ mb: 2, fontWeight: 'bold'}}>
-                        GENERAL INFORMATION
-                    </Typography>
-                </Box>
+  const useFellowshipComparison = sentWords >= WORDS_LOTR_THRESHOLD;
 
-                {/* slide 2: message count */}
-                <Box key="messages" sx={slideBoxStyles}>
-                    <Typography variant="body1" paragraph>
-                        You sent:
-                    </Typography>
-                    <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
-                        {sentMessages.toLocaleString()} messages
-                    </Typography>
-                    <Typography variant="body1" paragraph>
-                        in {data.basicStatistics.numberOfActiveMonths} months!
-                    </Typography>
-                    <Typography variant="body1" sx={{ mt: 2 }}>
-                        Stacking {sentMessages.toLocaleString()} postcards would make a pile about {floor(0.0005 * sentMessages)} meters tall.
-                    </Typography>
-                </Box>
+  const fellowshipPercent = useMemo(() => Math.round((sentWords / FELLOWSHIP_REFERENCE_WORDS) * 100), [sentWords]);
 
-                {/* slide 3: word count */}
-                <Box key="words" sx={slideBoxStyles}>
-                    <Typography variant="body1" paragraph>
-                        Overall, you sent:
-                    </Typography>
-                    <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
-                        {sentWords.toLocaleString()} words
-                    </Typography>
-                    <Typography variant="body1" sx={{ mt: 2, whiteSpace: 'pre-wrap'}}>
-                        {infoWord}
-                    </Typography>
-                </Box>
+  const hobbitPercent = useMemo(() => Math.round((sentWords / HOBBIT_REFERENCE_WORDS) * 100), [sentWords]);
 
-                {/* slide 4: words per message */}
-                <Box key="words-per-message" sx={slideBoxStyles}>
-                    <Typography variant="body1" paragraph>
-                        You sent
-                    </Typography>
-                    <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold', mb: 4 }}>
-                        {wordsPerMessage} words per message.
-                    </Typography>
-                    <Typography variant="body1" paragraph>
-                        An average sentence is 15-20 words, so you would send
-                    </Typography>
-                    <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
-                        {20/wordsPerMessage} messages
-                    </Typography>
-                    <Typography variant="body1">
-                        to equal one average sentence!
-                    </Typography>
-                </Box>
+  const bookPercent = useFellowshipComparison ? fellowshipPercent : hobbitPercent;
 
-                {/* slide 5: activity percentage */}
-                <Box key="activity" sx={slideBoxStyles}>
-                    <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold'}}>
-                        ACTIVITY SUMMARY
-                    </Typography>
-                    <Typography variant="body1" paragraph>
-                        If this was an attendance sheet,
-                    </Typography>
-                    <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
-                        {activeDays} out of {totalDays} days
-                    </Typography>
-                    <Typography variant="body1" paragraph>
-                        you&apos;d be marked &quot;Present&quot;!
-                    </Typography>
-                    <Typography variant="body1" sx={{ mt: 2 }}>
-                        Which means you were active {activeDaysPercentage}% of the days, sending at least one message.
-                    </Typography>
-                </Box>
+  const typingHours = useMemo(() => {
+    const h = sentWords / (TYPING_WPM * 60);
+    return Math.round(h * 10) / 10;
+  }, [sentWords]);
 
-                {/* --- slide 6: peak day --- */}
-                <Box key="peak-day" sx={slideBoxStyles}>
-                    <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
-                        PEAK DAY
-                    </Typography>
-                    <Typography variant="body1" paragraph>
-                        On your peak texting day, {peakDay.date},
-                        in each of the {peakDay.activeHours} hours of the day you were active,
-                    </Typography>
-                    <Typography variant="body1" paragraph>
-                        sending at least one message,
-                    </Typography>
-                    <Typography variant="body1" paragraph>
-                        exchanging {peakDay.totalMessagesExchanged} messages in total.
-                    </Typography>
-                    <Typography variant="body1" sx={{ mt: 2 }}>
-                        And the majority of that happened with {peakDay.topChat}.
-                    </Typography>
-                </Box>
-            </SwipeableViews>
+  const handleNext = () => setActiveStep(prev => (prev + 1) % maxSteps);
+  const handleBack = () => setActiveStep(prev => (prev - 1 + maxSteps) % maxSteps);
+  const handleStepChange = (step: number) => setActiveStep(step);
 
-            {/* navigation controls */}
-            <Box sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                p: 2,
-                bgcolor: 'background.default'
-            }}>
-                <Button onClick={handleBack} variant="contained">Back</Button>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    {[...Array(maxSteps)].map((_, index) => (
-                        <Box
-                            key={index}
-                            onClick={() => handleStepChange(index)}
-                            sx={{
-                                width: 10,
-                                height: 10,
-                                borderRadius: '50%',
-                                bgcolor: activeStep === index ? 'primary.main' : 'action.disabled',
-                                cursor: 'pointer',
-                                transition: 'background-color 0.3s'
-                            }}
-                        />
-                    ))}
-                </Box>
-                <Button onClick={handleNext} variant="contained">Next</Button>
-            </Box>
+  const introSlideShell = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 460,
+    p: 3,
+    textAlign: "center" as const,
+    color: TEXT_MAIN,
+    borderLeft: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22)}`,
+    borderRight: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22)}`,
+    bgcolor: SURFACE
+  };
+
+  const slideBoxStyles = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 460,
+    p: 4,
+    textAlign: "center",
+    bgcolor: SURFACE,
+    color: TEXT_MAIN,
+    borderLeft: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22)}`,
+    borderRight: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22)}`
+  };
+
+  const wordsFmt = sentWords.toLocaleString(locale);
+
+  return (
+    <Box sx={feedbackChartPaletteOuterSx}>
+      <Box aria-hidden sx={{ display: "flex", height: 4, width: "100%" }}>
+        <Box sx={{ flex: 1, bgcolor: FEEDBACK_SECTION_CHART_SENT }} />
+        <Box sx={{ flex: 1, bgcolor: FEEDBACK_SECTION_CHART_RECEIVED }} />
+      </Box>
+      <SwipeableViews
+        axis={theme.direction === "rtl" ? "x-reverse" : "x"}
+        index={activeStep}
+        onChangeIndex={handleStepChange}
+        enableMouseEvents
+      >
+        {/* slide 1: intro — same structure as “Your texting activity” */}
+        <Box key="header" sx={introSlideShell}>
+          <Typography
+            variant="overline"
+            sx={{
+              display: "block",
+              letterSpacing: "0.2em",
+              fontWeight: 700,
+              fontSize: "0.65rem",
+              color: FEEDBACK_SECTION_CHART_SENT,
+              mb: 1
+            }}
+          >
+            {tNav("cardOverline")}
+          </Typography>
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 800,
+              letterSpacing: "-0.03em",
+              color: TEXT_MAIN,
+              fontSize: { xs: "1.35rem", sm: "1.75rem" },
+              lineHeight: 1.2,
+              mb: 1.5
+            }}
+          >
+            {t("introTitle")}
+          </Typography>
+          <Typography variant="body2" sx={{ color: TEXT_MUTED, maxWidth: 420, lineHeight: 1.55 }}>
+            {t("introSubtitle")}
+          </Typography>
         </Box>
-    );
+
+        {/* slide 2: message totals + postcard (overview panel) */}
+        <Box
+          key="message-totals"
+          sx={{
+            ...slideBoxStyles,
+            justifyContent: "flex-start",
+            alignItems: "stretch",
+            py: 2,
+            px: { xs: 1.5, sm: 2 },
+            overflow: "hidden",
+            minHeight: 0
+          }}
+        >
+          <Box
+            sx={{
+              flex: "1 1 auto",
+              minHeight: 0,
+              display: "flex",
+              flexDirection: "column",
+              width: "100%"
+            }}
+          >
+            <StatisticsSummaryPanel stats={data.basicStatistics} isWhatsApp={isWhatsApp} fillHeight />
+          </Box>
+        </Box>
+
+        {/* slide 3: word count — book metaphor (Hobbit if X &lt; 100k, Fellowship if X ≥ 100k) */}
+        <Box
+          key="words"
+          sx={{
+            ...slideBoxStyles,
+            justifyContent: "flex-start",
+            py: 3,
+            overflowY: "auto"
+          }}
+        >
+          <Box
+            sx={{
+              width: "100%",
+              maxWidth: 540,
+              mx: "auto",
+              textAlign: "center",
+              px: { xs: 1, sm: 1.5 },
+              py: { xs: 0.5, sm: 0.75 },
+              bgcolor: "transparent"
+            }}
+          >
+            <Typography
+              variant="h5"
+              sx={{ fontWeight: 800, color: TEXT_MAIN, mb: 2, fontSize: { xs: "1.2rem", sm: "1.5rem" }, lineHeight: 1.3 }}
+            >
+              {t("wordsBookHeading")}
+            </Typography>
+            <Typography component="p" variant="body1" sx={{ color: TEXT_MAIN, mb: 1.5, lineHeight: 1.65 }}>
+              {t("wordsBookLine1a")}
+              <Box component="span" sx={{ fontWeight: 800, color: FEEDBACK_SECTION_CHART_SENT }}>
+                {wordsFmt}
+              </Box>
+              {t("wordsBookLine1b")}
+              <Box component="span" sx={{ fontWeight: 800, color: FEEDBACK_SECTION_CHART_SENT }}>
+                {bookPercent}
+              </Box>
+              {useFellowshipComparison ? t("wordsBookLine1cFellowship") : t("wordsBookLine1cHobbit")}
+            </Typography>
+            <Typography component="p" variant="body1" sx={{ color: TEXT_MAIN, mb: 2, lineHeight: 1.65 }}>
+              {t("wordsBookTypingA")}
+              <Box component="span" sx={{ fontWeight: 700, color: FEEDBACK_SECTION_CHART_RECEIVED }}>
+                {typingHours.toLocaleString(locale, { maximumFractionDigits: 1, minimumFractionDigits: 1 })}
+              </Box>
+              {t("wordsBookTypingB")}
+            </Typography>
+            <TolkienOpenBookIllustration
+              variant={useFellowshipComparison ? "fellowship" : "hobbit"}
+              ariaLabel={useFellowshipComparison ? t("wordsBookDecorAriaFellowship") : t("wordsBookDecorAriaHobbit")}
+              title={useFellowshipComparison ? t("wordsBookCoverTitleFellowship") : t("wordsBookCoverTitleHobbit")}
+              author={t("wordsBookCoverAuthor")}
+            />
+            {useFellowshipComparison && fellowshipPercent >= 100 ? (
+              <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 800, color: FEEDBACK_SECTION_CHART_SENT, letterSpacing: "0.02em" }}>
+                {t("wordsBookImpressiveFellowship")}
+              </Typography>
+            ) : null}
+            {!useFellowshipComparison && hobbitPercent >= 100 ? (
+              <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 800, color: FEEDBACK_SECTION_CHART_SENT, letterSpacing: "0.02em" }}>
+                {t("wordsBookImpressiveHobbit")}
+              </Typography>
+            ) : null}
+          </Box>
+        </Box>
+
+        {/* slide 4: words per message */}
+        <Box key="words-per-message" sx={slideBoxStyles}>
+          <Typography variant="body1" paragraph>
+            You sent
+          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: "bold", mb: 4, color: FEEDBACK_SECTION_CHART_SENT }}>
+            {wordsPerMessage} words per message.
+          </Typography>
+          <Typography variant="body1" paragraph>
+            An average sentence is 15-20 words, so you would send
+          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: "bold", mb: 2, color: FEEDBACK_SECTION_CHART_RECEIVED }}>
+            {wordsPerMessage > 0 ? Math.round((20 / wordsPerMessage) * 10) / 10 : "—"} messages
+          </Typography>
+          <Typography variant="body1">to equal one average sentence!</Typography>
+        </Box>
+
+        {/* slide 5: weekday × time-of-day heatmap + consistency & peak writing day */}
+        <Box
+          key="writing-heatmap"
+          sx={{
+            ...slideBoxStyles,
+            justifyContent: "flex-start",
+            alignItems: "stretch",
+            py: { xs: 1.25, sm: 1.75 },
+            px: { xs: 1, sm: 1.75 },
+            overflow: "hidden",
+            minHeight: 0
+          }}
+        >
+          <Box
+            sx={{
+              flex: "1 1 auto",
+              minHeight: 0,
+              width: "100%",
+              display: "flex",
+              flexDirection: "column"
+            }}
+          >
+            <WritingActivityHeatmapSlide
+              dailySentHours={data.dailySentHours ?? []}
+              activeDays={activeDays}
+              totalDays={totalDays}
+              activityPercentage={activeDaysPercentage}
+              locale={locale}
+            />
+          </Box>
+        </Box>
+      </SwipeableViews>
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          p: 2,
+          bgcolor: alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.06),
+          borderTop: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22)}`
+        }}
+      >
+        <Button
+          onClick={handleBack}
+          variant="contained"
+          sx={{
+            bgcolor: FEEDBACK_SECTION_CHART_RECEIVED,
+            "&:hover": { bgcolor: FEEDBACK_SECTION_CHART_RECEIVED_HOVER }
+          }}
+        >
+          {tNav("back")}
+        </Button>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          {[...Array(maxSteps)].map((_, index) => (
+            <Box
+              key={index}
+              onClick={() => handleStepChange(index)}
+              sx={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                bgcolor: activeStep === index ? FEEDBACK_SECTION_CHART_SENT : alpha(TEXT_MAIN, 0.14),
+                cursor: "pointer",
+                transition: "background-color 0.3s, transform 0.2s",
+                transform: activeStep === index ? "scale(1.12)" : "scale(1)",
+                boxShadow: activeStep === index ? `0 0 0 2px ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.4)}` : "none"
+              }}
+            />
+          ))}
+        </Box>
+        <Button
+          onClick={handleNext}
+          variant="contained"
+          sx={{
+            bgcolor: FEEDBACK_SECTION_CHART_SENT,
+            "&:hover": { bgcolor: FEEDBACK_SECTION_CHART_SENT_HOVER }
+          }}
+        >
+          {tNav("next")}
+        </Button>
+      </Box>
+    </Box>
+  );
 }

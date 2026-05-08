@@ -8,11 +8,6 @@ export const CHART_COLORS = {
   background: "#f5f5f5"
 };
 
-export const POLAR_CHART_COLORS = {
-  drawing: "#FFFFFF",
-  highlight: "#FFD700"
-};
-
 const MOBILE_HEIGHT = 250;
 const DESKTOP_HEIGHT = 400;
 const X_TICKS = { font: { size: 12 }, padding: 5 };

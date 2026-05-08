@@ -47,12 +47,23 @@ export function produceReplyTimeRace(donorId: string, conversations: Conversatio
     }
 
     let displayString = "";
+    const totalMinutes = Math.round(medianReplyTimeMs / 60000);
 
     if (medianReplyTimeMs < 60000) {
       displayString = "<1 min";
+    } else if (totalMinutes < 60) {
+      displayString = `${totalMinutes} min${totalMinutes !== 1 ? "s" : ""}`;
+    } else if (totalMinutes < 1440) {
+      const hrs = Math.floor(totalMinutes / 60);
+      const remainMins = totalMinutes % 60;
+      displayString = remainMins > 0 ? `${hrs} hr${hrs !== 1 ? "s" : ""} ${remainMins} min` : `${hrs} hr${hrs !== 1 ? "s" : ""}`;
     } else {
-      const mins = Math.round(medianReplyTimeMs / 60000);
-      displayString = `${mins} min${mins !== 1 ? "s" : ""}`;
+      const days = Math.floor(totalMinutes / 1440);
+      const remainHrs = Math.floor((totalMinutes % 1440) / 60);
+      displayString =
+        remainHrs > 0
+          ? `${days} day${days !== 1 ? "s" : ""} ${remainHrs} hr${remainHrs !== 1 ? "s" : ""}`
+          : `${days} day${days !== 1 ? "s" : ""}`;
     }
 
     // the original calculation for sorting/charts if needed

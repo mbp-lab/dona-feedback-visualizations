@@ -445,8 +445,96 @@
       "overallData": "All chats",
       "numberMessages": "Number of messages"
     },
+    "generalInfoCarousel": {
+      "introTitle": "General information",
+      "introSubtitle": "Swipe through your message totals, word highlights, and when you tend to write the most.",
+      "wordsBookHeading": "If your chats were a book …",
+      "wordsBookLine1a": "They would contain ",
+      "wordsBookLine1b": " words, roughly ",
+      "wordsBookLine1cHobbit": "% of “The Hobbit” by J.R.R. Tolkien (~95,000 words)!",
+      "wordsBookLine1cFellowship": "% of “The Fellowship of the Ring” by J.R.R. Tolkien (first volume of The Lord of the Rings, ~187,790 words)!",
+      "wordsBookTypingA": "That would take ",
+      "wordsBookTypingB": " hours to type!",
+      "wordsBookCoverTitleHobbit": "The Hobbit",
+      "wordsBookCoverTitleFellowship": "The Fellowship of the Ring",
+      "wordsBookCoverAuthor": "J.R.R. Tolkien",
+      "wordsBookImpressiveHobbit": "Impressive — that’s a whole Hobbit’s worth of words!",
+      "wordsBookImpressiveFellowship": "Impressive! Trilogy it is!",
+      "wordsBookDecorAriaHobbit": "Decorative open book: ruled page and Hobbit title with mountain sketch.",
+      "wordsBookDecorAriaFellowship": "Decorative open book: ruled page, Fellowship title, and golden ring.",
+      "heatmapTitle": "Check out when you write the most",
+      "heatmapAria": "Heatmap of sent words by weekday and time of day. Rows use 24-hour local time ranges.",
+      "heatmapHoursFootnote": "Times are 24-hour clock, based on each message timestamp.",
+      "heatmapBandEarlyMorn": "Early morning\n0:00–5:59",
+      "heatmapBandMorning": "Morning\n6:00–11:59",
+      "heatmapBandAfternoon": "Afternoon\n12:00–17:59",
+      "heatmapBandEvening": "Evening\n18:00–21:59",
+      "heatmapBandLateNight": "Late night\n22:00–23:59",
+      "heatmapConsistency": "Your consistency: You wrote something in {activeDays} out of {totalDays} days ({percent}%)!",
+      "heatmapPeakDay": "Your peak writing day: {date} — {words} words",
+      "heatmapPeakDayNone": "Your peak writing day: not enough hourly word data in this donation."
+    },
+    "lifeEventActivity": {
+      "cardOverline": "Your data",
+      "title": "Did any life event change your activity?",
+      "intro": "Set an event date and comparison window below. The first chart shows your overall daily word trends; the summary cards and timeline focus on activity before and after that date."
+    },
+    "comparisonCarousel": {
+      "cardOverline": "Your data",
+      "introTitle": "Your texting activity",
+      "introSubtitle": "Swipe through who gets your words, sent vs. received, and when you are most active.",
+      "mostWordsTitle": "Who do you send the most words to?",
+      "sentReceivedTitle": "Do you send more words than you receive?",
+      "dayPartsTitle": "When are you the most active?",
+      "dayPartsSubtitle": "Share of sent and received words across the four parts of the day.",
+      "back": "Back",
+      "next": "Next"
+    },
+    "socialContent": {
+      "cardOverline": "Your network",
+      "title": "Social content activity",
+      "intro": "Posts, comments, and reactions — how you engage on the platform beyond chat.",
+      "timelineTitle": "Social engagement timeline",
+      "timelineIntro": "Combined view of your social content activity over time.",
+      "styleTitle": "Your public communication includes",
+      "styleIntro": "How posts, comments, and reactions in this donation compare as a share of your public activity.",
+      "styleCountComments": "{count} comments",
+      "styleCountReactions": "{count} reactions",
+      "styleCountPosts": "{count} posts",
+      "styleDonutLegendComments": "Comments",
+      "styleDonutLegendReactions": "Reactions",
+      "styleDonutLegendPosts": "Posts",
+      "styleDonutNoData": "No posts, comments, or reactions were included in this donation.",
+      "styleArchetypeCreator": "Creator",
+      "styleArchetypeObserver": "Observer",
+      "styleArchetypeConversationalist": "Conversationalist",
+      "styleArchetypeConsumer": "Consumer",
+      "styleArchetypeBalanced": "Balanced",
+      "styleArchetypeCreatorDesc": "Most of your activity comes from creating original posts.",
+      "styleArchetypeObserverDesc": "You engage primarily through reactions — quick, lightweight interactions.",
+      "styleArchetypeConversationalistDesc": "You prefer engaging through comments and conversations with others.",
+      "styleArchetypeConsumerDesc": "Most of your activity comes from reacting to and commenting on others' content.",
+      "styleArchetypeBalancedDesc": "You have a well-rounded engagement style across creating, commenting, and reacting.",
+      "postsTitle": "Post activity",
+      "commentsTitle": "Comment activity",
+      "reactionsTitle": "Reactions"
+    },
+    "chatActivity": {
+      "cardOverline": "Your data",
+      "cardIntro": "See who you message most and how quickly you reply across your chats.",
+      "title": "Your activity in different chats",
+      "topContactsTitle": "Who are your Top 3 contacts?",
+      "topContactsFootnote": "This shows the total messages you sent in these chats.",
+      "replyRaceTitle": "In which chat do you reply the fastest?",
+      "replyRaceSubtitle": "If this was a race, {winner} would be the winner!"
+    },
     "statisticsCard": {
       "title": "Overview of all Activity",
+      "cardOverline": "Your data",
+      "donationIncludesYears_format": "Your donation includes {years} years of chat data.",
+      "postcardDecorAria": "Illustration of a stack of postcards",
+      "postcardSent_format": "You sent {count} messages!",
+      "postcardStack_format": "Stacking {count} postcards would make a pile about {meters} meters tall.",
       "thousandSeparator": ",",
       "totalMessages": "Total messages",
       "averagePerActiveMonth": "Average Messages per Active Month",
@@ -462,6 +550,8 @@
     },
     "messageComposition": {
       "title": "Message Composition",
+      "cardOverline": "Your data",
+      "cardIntro": "Audio clip lengths and emoji usage—how your messages are composed, not just how many you send.",
       "messageTypesBarChart": {
         "title": "Message Types",
         "description": "This chart shows the distribution of message types (text and audio) that you sent and received. Click <button>HERE</button> to see an explanation with an example.",
@@ -522,6 +612,8 @@
     },
     "interactionIntensity": {
       "title": "Interaction Intensity",
+      "cardOverline": "Your data",
+      "cardIntro": "See how your messaging intensity compares across chats over time—and explore monthly audio totals when your export includes them.",
       "textHeader": "In text messages",
       "audioHeader": "In audio messages",
       "animatedIntensityPolarChart": {
@@ -609,7 +701,6 @@
       }
     },
     "dailyActivityTimes": {
-      "title": "Daily Activity Times",
       "dailyActivityHoursChart": {
         "description": "In this plot, you can see in which hours of the day you were active for the whole time span of the data you donated. If an hour (square in the plot) has a darker color, you sent more words in that hour than in your average hour. If the color is lighter, then you sent fewer words than in the average case. If you want to look closer at a specific time span you can zoom in by clicking on the graph and holding while you move your mouse to the left or the right to produce the time window you want to zoom into. Click <button>HERE</button> to see an explanation with an example.",
         "yAxis": "Time",
@@ -621,7 +712,6 @@
           "text": "<p><b>(1)</b> In this example, a change in the activity hours can be observed in this area. In the period at <b>(2)</b> you can see that no messages were sent between approximately 8:00 AM and 12:00 PM. Then in the period at <b>(3)</b>, this area of no messages has shifted to the hours between about 2:00 AM and 6:00 AM. This could be due to moving to a different time zone or a change in sleep schedule.</p><p><b>(4)</b> For example, more dark squares can be observed here. Therefore, an above-average number of messages were sent in this period.</p><p><b>(5)</b> Click this icon to download the graph.</p>"
         }
       },
-      "moreAbout": "More about your Daily Activity Times",
       "dayPartsOverall": {
         "description": "In this graph, you can see how the words you sent and received are distributed over different parts of the day. You see  averaged values over the entire period of your data donation.",
         "legend": {
@@ -630,21 +720,16 @@
         },
         "yAxis": "Percentage of all words",
         "xAxis": "Four parts of the day",
+        "bucketStoryNightOwl": "night owl activity",
+        "bucketStoryEarlyBird": "early bird",
+        "bucketStoryWorkingHour": "working hour",
+        "bucketStoryAfterWork": "after work",
         "example": {
           "image": "images/feedback_example_dayPartsPlot_english.svg",
           "text": "<p class=\"text-left\"><b>(1)</b> In this example, between midnight and 6:00 AM and between 6:00 AM and noon less than 10% of all words were sent and received. In both of those parts of the day, a few more words were sent than received.</p><p class=\"text-left\"><b>(2)</b> On the other hand, between noon and 6:00 PM a little less than 40% of all words were sent and received.<br> Between 6:00 PM and midnight just under 45% of all words were sent and received. In both of those parts of the day, a few more words were received than sent.</p>"
         }
       },
-      "dayPartsMonthly": {
-        "title": "Day Parts per Month",
-        "description": "Contrary to the graph above, in this graph you can see how the words you sent are distributed over different parts of the day <u>per month</u>.",
-        "legend": {
-          "sent": "Sent words",
-          "received": "Received words"
-        },
-        "yAxis": "Percentage of all words",
-        "xAxis": "Four parts of the day"
-      }
+      "moreAbout": "More about your Daily Activity Times"
     },
     "responseTimes": {
       "title": "Response Times",

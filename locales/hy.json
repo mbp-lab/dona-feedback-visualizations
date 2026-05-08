@@ -443,8 +443,96 @@
       "overallData": "Բոլոր չատերը",
       "numberMessages": "Հաղորդագրությունների քանակ"
     },
+    "generalInfoCarousel": {
+      "introTitle": "Ընդհանուր տեղեկություն",
+      "introSubtitle": "Դիտեք Ձեր հաղորդագրությունների ամփոփումը, բառային նշումները և երբ եք ամենաշատը գրում։",
+      "wordsBookHeading": "Եթե Ձեր չատերը գիրք լինեին …",
+      "wordsBookLine1a": "Դրանք կպարունակեին ",
+      "wordsBookLine1b": " բառ, մոտավորապես ",
+      "wordsBookLine1cHobbit": "% «Հոբիտը» (Ջ. Ռ. Ռ. Թոլկին, ~95 000 բառ)։",
+      "wordsBookLine1cFellowship": "% «Թագավոր եղբայրության մատանին» (Ջ. Ռ. Ռ. Թոլկին, Տոմ 1, ~187 790 բառ)։",
+      "wordsBookTypingA": "Դա մոտ ",
+      "wordsBookTypingB": " ժամ կտևեր ստեղնահարելիս։",
+      "wordsBookCoverTitleHobbit": "The Hobbit",
+      "wordsBookCoverTitleFellowship": "The Fellowship of the Ring",
+      "wordsBookCoverAuthor": "J. R. R. Tolkien",
+      "wordsBookImpressiveHobbit": "Հիանալի է՝ սա արդեն ամբողջ «Հոբիտ» երկարության խորաշարժ է։",
+      "wordsBookImpressiveFellowship": "Հիանալի է՝ արդեն եռմասանի մասշտաբով։",
+      "wordsBookDecorAriaHobbit": "Ձևավորական բաց գիրք՝ գծավոր էջով, Հոբիտ վերնագրով և սարերի նկարով։",
+      "wordsBookDecorAriaFellowship": "Ձևավորական բաց գիրք՝ գծավոր էջով, Մատանին վերնագրով և ոսկեզօն մատանի։",
+      "heatmapTitle": "Տեսեք, թե երբ եք ամենաշատը գրում",
+      "heatmapAria": "Ուղարկած բառերի ջերմային քարտեզ՝ ըստ շաբաթվա օրվա և օրվա ժամի։ Տողերը՝ 24-ժամյա միջակայքեր։",
+      "heatmapHoursFootnote": "Ժամերը 24-ժամյա ձևաչափով են, հիմնված Ձեր հաղորդագրությունների ժամանակի նշիչների վրա։",
+      "heatmapBandEarlyMorn": "Առավոտային շուտ\n0:00–5:59",
+      "heatmapBandMorning": "Առավոտ\n6:00–11:59",
+      "heatmapBandAfternoon": "Կեսօրից հետո\n12:00–17:59",
+      "heatmapBandEvening": "Երեկո\n18:00–21:59",
+      "heatmapBandLateNight": "Գիշերային ուշ\n22:00–23:59",
+      "heatmapConsistency": "Ձեր հետևողականությունը․ Դուք {totalDays} օրվանից {activeDays}‑ում ({percent}%) գրել եք։",
+      "heatmapPeakDay": "Ամենաշատ գրած օրը․ {date} — {words} բառ",
+      "heatmapPeakDayNone": "Ամենաշատ գրած օրը․ այս նվիրաբերությունում ժամային բառերի տվյալները բավարար չեն։"
+    },
+    "lifeEventActivity": {
+      "cardOverline": "Ձեր տվյալները",
+      "title": "Did any life event change your activity?",
+      "intro": "Set an event date and comparison window below. The first chart shows your overall daily word trends; the summary cards and timeline focus on activity before and after that date."
+    },
+    "comparisonCarousel": {
+      "cardOverline": "Ձեր տվյալները",
+      "introTitle": "Ձեր տեքստային ակտիվությունը",
+      "introSubtitle": "Դիտեք՝ ում եք ամենաշատ բառեր ուղարկում, ուղարկվածն ու ստացվածը, և օրվա որ հատվածում եք ամենաակտիվ։",
+      "mostWordsTitle": "Ում եք ամենաշատ բառեր ուղարկում։",
+      "sentReceivedTitle": "Ավելի շատ բառեր եք ուղարկում, քան ստանում։",
+      "dayPartsTitle": "Ե՞րբ եք ամենաակտիվ։",
+      "dayPartsSubtitle": "Ուղարկած և ստացած բառերի բաշխումը օրվա չորս հատվածներում։",
+      "back": "Հետ",
+      "next": "Առաջ"
+    },
+    "socialContent": {
+      "cardOverline": "Ձեր ցանցը",
+      "title": "Սոցիալ բովանդակության ակտիվություն",
+      "intro": "Գրառումներ, մեկնաբանություններ և կարծիքներ — ինչպես եք ներգրկված հարթակում զրույցից դուրս։",
+      "timelineTitle": "Ներգրավվածության ժամանակագրություն",
+      "timelineIntro": "Ձեր սոցիալ բովանդակության ակտիվության համահարթեցված տեսքը ժամանակի ընթացքում։",
+      "styleTitle": "Ձեր հանրային հաղորդակցությունը ներառում է",
+      "styleIntro": "Այս նվիրատվության գրառումները, մեկնաբանություններն ու արձագանքները՝ որպես ձեր հանրային ակտիվության մասերի հարաբերակցություն։",
+      "styleCountComments": "{count} մեկնաբանություն",
+      "styleCountReactions": "{count} արձագանք",
+      "styleCountPosts": "{count} գրառում",
+      "styleDonutLegendComments": "Մեկնաբանություններ",
+      "styleDonutLegendReactions": "Արձագանքներ",
+      "styleDonutLegendPosts": "Գրառումներ",
+      "styleDonutNoData": "Այս նվիրատվության մեջ գրառում, մեկնաբանություն կամ արձագանք ներառված չէ։",
+      "styleArchetypeCreator": "Ստեղծող",
+      "styleArchetypeObserver": "Դիտորդ",
+      "styleArchetypeConversationalist": "Զրույցապաշտ",
+      "styleArchetypeConsumer": "Օգտագործող",
+      "styleArchetypeBalanced": "Համաչափ",
+      "styleArchetypeCreatorDesc": "Ձեր ակտիվության մեծ մասն ընկնում է բնօրինակ գրառումների վրա։",
+      "styleArchetypeObserverDesc": "Դուք հիմնականում մասնակցում եք արձագանքներով՝ արագ ու թեթև փոխազդեցություններ։",
+      "styleArchetypeConversationalistDesc": "Դուք նախընտրում եք մասնակցել մեկնաբանություններով և զրույցներով։",
+      "styleArchetypeConsumerDesc": "Ձեր ակտիվության մեծ մասը՝ ուրիշների բարդացմանը արձագանքելն ու մեկնաբանելն է։",
+      "styleArchetypeBalancedDesc": "Դուք հավասարակշռված եք գրառումներով, մեկնաբանություններով ու արձագանքներով։",
+      "postsTitle": "Գրառումների ակտիվություն",
+      "commentsTitle": "Մեկնաբանությունների ակտիվություն",
+      "reactionsTitle": "Արձագանքներ"
+    },
+    "chatActivity": {
+      "cardOverline": "Your data",
+      "cardIntro": "See who you message most and how quickly you reply across your chats.",
+      "title": "Your activity in different chats",
+      "topContactsTitle": "Who are your Top 3 contacts?",
+      "topContactsFootnote": "This shows the total messages you sent in these chats.",
+      "replyRaceTitle": "In which chat do you reply the fastest?",
+      "replyRaceSubtitle": "If this was a race, {winner} would be the winner!"
+    },
     "statisticsCard": {
       "title": "Պատկերացում Ձեր ակտիվության մասին",
+      "cardOverline": "Ձեր տվյալները",
+      "donationIncludesYears_format": "Ձեր նվիրատվությունը ներառում է {years} տարվա չաթի տվյալներ։",
+      "postcardDecorAria": "Բացիկների կույտի պատկերազարդում",
+      "postcardSent_format": "Դուք ուղարկել եք {count} հաղորդագրություն․",
+      "postcardStack_format": "{count} բացիկները կույտ անելը կկազմի մոտ {meters} մետր բարձրությամբ աշտարակ։",
       "thousandSeparator": ",",
       "totalMessages": "Հաղորդագրությունների քանակ",
       "averagePerActiveMonth": "Միջին մեկ ակտիվ ամսում",
@@ -460,6 +548,8 @@
     },
     "messageComposition": {
       "title": "Հաղորդագրության կազմություն",
+      "cardOverline": "Ձեր տվյալները",
+      "cardIntro": "Աուդիո հաղորդագրությունների երկարությունն ու էմոջիի օգտագործումը — թե ինչպես են կազմված Ձեր հաղորդագրությունները, ոչ թե միայն թե քանի ուղարկել եք։",
       "messageTypesBarChart": {
         "title": "Հաղորդագրության տեսակներ",
         "description": "Այս գծապատկերը ցույց է տալիս Ձեր ուղարկած և ստացած հաղորդագրությունների տեսակների (տեքստային և ձայնային) բաշխումը։ Սեղմեք <button>ԱՅՍՏԵՂ</button>՝ օրինակով բացատրություն տեսնելու համար։",
@@ -520,6 +610,8 @@
     },
     "interactionIntensity": {
       "title": "Փոխազդեցության ինտենսիվություն",
+      "cardOverline": "Your data",
+      "cardIntro": "See how your messaging intensity compares across chats over time—and explore monthly audio totals when your export includes them.",
       "textHeader": "Տեքստային հաղորդագրություններում",
       "audioHeader": "Ձայնային հաղորդագրություններում",
       "animatedIntensityPolarChart": {
@@ -606,7 +698,6 @@
       }
     },
     "dailyActivityTimes": {
-      "title": "Ակտիվ ժամեր",
       "dailyActivityHoursChart": {
         "description": "Այս գրաֆիկում կարող եք տեսնել, թե օրվա որ ժամերին եք ավելի ակտիվ՝ տրամադրված տվյալների ամբողջ ժամանակահատվածի համար։ Ավելի մուգ քառակուսիները նշանակում են, որ այդ ժամին սովորականից ավելի ակտիվ եք եղել։ Եթե գույնն ավելի բաց է, ապա միջինից քիչ բառեր եք ուղարկել։  Ավելի մանրամասն տեսնելու համար կարող եք սեղմել գրաֆիկի վրա ու մկնիկը աջ կամ ձախ տանելով  ընտրել նախընտրած ժամանակահատվածը։ Սեղմեք <button>այստեղ</button> բացատրական օրինակի համար։",
         "yAxis": "Ժամանակ",
@@ -618,7 +709,6 @@
           "text": "<p><b>(1)</b> Այս օրինակում կարող եք տեսնել ակտիվ ժամերի փոփոխություն։ Դատարկ քառակուսիները մատնանշում են օրվա այն ժամերը, որոնց ընթացքում հաղորդագրություններ չեք ուղարկել <b>(2)</b>-րդ հատվածում դա համապատասխանում է  8:00-ից 12:00-ն ընկած ժամանակահատվածին։ Սակայն <b>(3)</b>-րդ օրինակում  հաղորդագրություններ չեն ուղարկվել 2:00-ից 6:00-ը։ Պատճառը կարող է լինել այլ ժամային գոտի տեղափոխվելը կամ քնի ռեժիմի փոփոխությունը։ </p><p><b>(4)</b>-րդ օրինակում ավելի մուգ քառակուսիներ են երևում։ Հետևաբար, այս ժամանակահատվածում ավելի շատ հաղորդագրություններ են ուղարկվել քան սովորաբար։ </p><p><b>(5)</b>  Սեղմեք այստեղ պատկերը ներբեռնելու համար։</p>"
         }
       },
-      "moreAbout": "Ավելին Ձեր ակտիվ ժամերի մասին",
       "dayPartsOverall": {
         "description": "Այստեղ կարող եք տեսնել ստացած կամ ուղարկած բառերի բաշխվածությունը օրվա տարբեր հատվածների միջև։ Սրանք նվիրաբերված տվյալների ամբողջ ժամանակահատվածին վերաբերող արժեքներն են։",
         "legend": {
@@ -627,20 +717,16 @@
         },
         "yAxis": "Բառերի տոկոս",
         "xAxis": "Օրվա չորս հատվածները",
+        "bucketStoryNightOwl": "night owl activity",
+        "bucketStoryEarlyBird": "early bird",
+        "bucketStoryWorkingHour": "working hour",
+        "bucketStoryAfterWork": "after work",
         "example": {
           "image": "images/feedback_example_dayPartsPlot_english.svg",
           "text": "<p class=\"text-left\"><b>(1)</b> Այս օրինակում, կեսգիշերից մինչև 6:00 AM ու 6:00 AM-ից մինչև կեսօր բառերի  10%-ից քիչ քանակն է փոխանակվել։ Օրվա այդ հատվածներին ուղարկված բառերի քանակը փոքր-ինչ գերազանցում է ուղարկցածներին։ </p><p class=\"text-left\"><b>(2)</b> Մյուս կողմից կեսօրից մինչև 6:00 PM հաղորդագրությունների մոտ 40%-ն է փոխանակվել։ <br>  6:00 PM-ից մինչև կեսգիշեր բառերի 45%-ից պակաս քանակ է փոխանակվել. Օրվա այս հատվածներին ավելի շատ բառեր են ստացվել քան ուղարկվել։ </p>"
         }
       },
-      "dayPartsMonthly": {
-        "description": "Ի տարբերություն վերևի գրաֆիկի՝ այստեղ կարող եք տեսնել թե ինչպես է Ձեր ակտիվությունը բաշխված օրվա տարբեր հատվածների մեջ՝  <u>ըստ ամիսների</u>։",
-        "legend": {
-          "sent": "Ուղարկած բառեր",
-          "received": "Ստացած բառեր"
-        },
-        "yAxis": "Բառերի տոկոս",
-        "xAxis": "Օրվա չորս հատվածները"
-      }
+      "moreAbout": "Ավելին Ձեր ակտիվ ժամերի մասին"
     },
     "responseTimes": {
       "title": "Պատասխանի արագություն",

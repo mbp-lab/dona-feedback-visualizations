@@ -3,6 +3,7 @@
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
+import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
 import Grid from "@mui/material/Grid2";
 import InputLabel from "@mui/material/InputLabel";
@@ -10,14 +11,14 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useTheme } from "@mui/material/styles";
+import { alpha } from "@mui/material/styles";
 import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip, Filler } from "chart.js";
-import { useState, useMemo } from "react";
+import { useState, useMemo, type ReactNode } from "react";
 import { Line } from "react-chartjs-2";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
-import { CHART_COLORS } from "@components/charts/chartConfig";
+import { FEEDBACK_SECTION_CHART_RECEIVED, FEEDBACK_SECTION_CHART_SENT } from "@components/charts/feedbackSectionTheme";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
@@ -36,6 +37,12 @@ interface EventComparisonProps {
   receivedMessages: MessageData[];
   perChatSentMessages: PerChatMessages[];
   defaultWindowDays?: number;
+  /** Hide the "Event-Based Activity Analysis" heading + intro when used inside a combined section */
+  hideSectionIntro?: boolean;
+  /** If set, full-width sliding-window chart (life-event section); shown before metrics & timeline. */
+  chartSlotLeft?: ReactNode;
+  /** Optional heading above the sliding-window chart. */
+  chartSlotLeftTitle?: string;
 }
 
 interface PeriodMetrics {
@@ -53,9 +60,11 @@ const EventComparisonChart: React.FC<EventComparisonProps> = ({
   sentMessages,
   receivedMessages,
   perChatSentMessages,
-  defaultWindowDays = 30
+  defaultWindowDays = 30,
+  hideSectionIntro = false,
+  chartSlotLeft,
+  chartSlotLeftTitle
 }) => {
-  const theme = useTheme();
   const [eventDate, setEventDate] = useState<string>("");
   const [windowDays, setWindowDays] = useState(defaultWindowDays);
   const [selectedChat, setSelectedChat] = useState<string>(ALL_CHATS);
@@ -144,8 +153,8 @@ const EventComparisonChart: React.FC<EventComparisonProps> = ({
       {
         label: selectedChat === ALL_CHATS ? "Sent Messages" : `Sent – ${selectedChat}`,
         data: sentCounts,
-        borderColor: CHART_COLORS.primary,
-        backgroundColor: CHART_COLORS.primaryTransparent,
+        borderColor: FEEDBACK_SECTION_CHART_SENT,
+        backgroundColor: alpha(FEEDBACK_SECTION_CHART_SENT, 0.2),
         tension: 0.4,
         fill: true,
         pointRadius: 2,
@@ -161,8 +170,8 @@ const EventComparisonChart: React.FC<EventComparisonProps> = ({
       datasets.push({
         label: "Received Messages",
         data: recvCounts,
-        borderColor: CHART_COLORS.secondary,
-        backgroundColor: CHART_COLORS.secondaryTransparent,
+        borderColor: FEEDBACK_SECTION_CHART_RECEIVED,
+        backgroundColor: alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.2),
         tension: 0.4,
         fill: true,
         pointRadius: 2,
@@ -171,7 +180,7 @@ const EventComparisonChart: React.FC<EventComparisonProps> = ({
     }
 
     return { labels: allDates, datasets };
-  }, [beforeSent, afterSent, beforeReceived, afterReceived, eventDate, windowDays, theme, selectedChat, showReceived]);
+  }, [beforeSent, afterSent, beforeReceived, afterReceived, eventDate, windowDays, selectedChat, showReceived]);
 
   const chartOptions = {
     responsive: true,
@@ -219,14 +228,14 @@ const EventComparisonChart: React.FC<EventComparisonProps> = ({
             {title}
           </Typography>
           <Box sx={{ display: "flex", alignItems: "baseline", gap: 1, mb: 1 }}>
-            <Typography variant="h6" sx={{ color: CHART_COLORS.primary }}>
+            <Typography variant="h6" sx={{ color: FEEDBACK_SECTION_CHART_SENT }}>
               {before.toFixed(1)}
               {unit}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               →
             </Typography>
-            <Typography variant="h6" sx={{ color: CHART_COLORS.secondary }}>
+            <Typography variant="h6" sx={{ color: FEEDBACK_SECTION_CHART_RECEIVED }}>
               {after.toFixed(1)}
               {unit}
             </Typography>
@@ -243,110 +252,201 @@ const EventComparisonChart: React.FC<EventComparisonProps> = ({
     );
   };
 
+  const controlsGrid = (
+    <Grid container spacing={2}>
+      <Grid size={{ xs: 12, sm: 4 }}>
+        <TextField
+          fullWidth
+          label="Event Date"
+          type="date"
+          value={eventDate}
+          onChange={e => setEventDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+          helperText="Choose a significant date"
+        />
+      </Grid>
+      <Grid size={{ xs: 12, sm: 4 }}>
+        <TextField
+          fullWidth
+          label="Comparison Window (days)"
+          type="number"
+          value={windowDays}
+          onChange={e => setWindowDays(Math.max(7, Math.min(90, parseInt(e.target.value) || 30)))}
+          inputProps={{ min: 7, max: 90 }}
+          helperText="Days before and after (7-90)"
+        />
+      </Grid>
+      <Grid size={{ xs: 12, sm: 4 }}>
+        <FormControl fullWidth>
+          <InputLabel>Chat filter (sent only)</InputLabel>
+          <Select value={selectedChat} label="Chat filter (sent only)" onChange={e => setSelectedChat(e.target.value)}>
+            <MenuItem value={ALL_CHATS}>All chats (sent + received)</MenuItem>
+            {perChatSentMessages.map(chat => (
+              <MenuItem key={chat.chatName} value={chat.chatName}>
+                {chat.chatName}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+    </Grid>
+  );
+
   return (
     <Box sx={{ width: "100%" }}>
-      <Card
-        elevation={0}
-        sx={{ mb: 3, background: "linear-gradient(135deg, #EFF6FF 0%, #F0FDF4 100%)", border: "2px solid", borderColor: "divider" }}
-      >
-        <CardContent>
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, color: "primary.main" }}>
-            Event-Based Activity Analysis
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Select a significant date to compare your messaging activity before and after that event.
-          </Typography>
-
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
-                fullWidth
-                label="Event Date"
-                type="date"
-                value={eventDate}
-                onChange={e => setEventDate(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-                helperText="Choose a significant date"
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
-                fullWidth
-                label="Comparison Window (days)"
-                type="number"
-                value={windowDays}
-                onChange={e => setWindowDays(Math.max(7, Math.min(90, parseInt(e.target.value) || 30)))}
-                inputProps={{ min: 7, max: 90 }}
-                helperText="Days before and after (7-90)"
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <FormControl fullWidth>
-                <InputLabel>Chat filter (sent only)</InputLabel>
-                <Select value={selectedChat} label="Chat filter (sent only)" onChange={e => setSelectedChat(e.target.value)}>
-                  <MenuItem value={ALL_CHATS}>All chats (sent + received)</MenuItem>
-                  {perChatSentMessages.map(chat => (
-                    <MenuItem key={chat.chatName} value={chat.chatName}>
-                      {chat.chatName}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
-
-      {hasData && beforeSent && afterSent && (
+      {chartSlotLeft ? (
         <>
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <MetricCard title="Avg Sent/Day" before={beforeSent.avgMessagesPerDay} after={afterSent.avgMessagesPerDay} />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <MetricCard title="Avg Words/Sent Msg" before={beforeSent.avgWordCount} after={afterSent.avgWordCount} />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <MetricCard title="Total Sent" before={beforeSent.totalMessages} after={afterSent.totalMessages} />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              {showReceived && beforeReceived && afterReceived ? (
-                <MetricCard title="Total Received" before={beforeReceived.totalMessages} after={afterReceived.totalMessages} />
-              ) : (
-                <MetricCard title="Total Words" before={beforeSent.totalWords} after={afterSent.totalWords} />
-              )}
-            </Grid>
-          </Grid>
-
-          {chartData && (
-            <Card elevation={0} sx={{ border: "1px solid", borderColor: "divider" }}>
-              <CardContent>
-                <Box sx={{ height: 400 }}>
-                  <Line data={chartData} options={chartOptions} />
-                </Box>
-                <Box sx={{ mt: 2, p: 2, background: "action.hover", borderRadius: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Event date:</strong> {new Date(eventDate).toLocaleDateString()} &nbsp;|&nbsp;
-                    <strong>Window:</strong> {windowDays} days before & after
-                    {selectedChat !== ALL_CHATS && (
-                      <>
-                        &nbsp;|&nbsp; <strong>Filtered to:</strong> {selectedChat} (sent only)
-                      </>
-                    )}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+          <Box>{controlsGrid}</Box>
+          <Divider sx={{ my: 2.5 }} />
+          <Box>
+            {chartSlotLeftTitle ? (
+              <Typography variant="subtitle1" component="h3" sx={{ fontWeight: 700, color: "text.primary", mb: 2 }}>
+                {chartSlotLeftTitle}
+              </Typography>
+            ) : null}
+            {chartSlotLeft}
+          </Box>
+          {hasData && beforeSent && afterSent && (
+            <>
+              <Divider sx={{ my: 2.5 }} />
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <MetricCard title="Avg Sent/Day" before={beforeSent.avgMessagesPerDay} after={afterSent.avgMessagesPerDay} />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <MetricCard title="Avg Words/Sent Msg" before={beforeSent.avgWordCount} after={afterSent.avgWordCount} />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <MetricCard title="Total Sent" before={beforeSent.totalMessages} after={afterSent.totalMessages} />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  {showReceived && beforeReceived && afterReceived ? (
+                    <MetricCard title="Total Received" before={beforeReceived.totalMessages} after={afterReceived.totalMessages} />
+                  ) : (
+                    <MetricCard title="Total Words" before={beforeSent.totalWords} after={afterSent.totalWords} />
+                  )}
+                </Grid>
+              </Grid>
+            </>
+          )}
+          <Divider sx={{ my: 2.5 }} />
+          {!eventDate ? (
+            <Box
+              sx={{
+                textAlign: "center",
+                py: 4,
+                px: 2,
+                border: "1px dashed",
+                borderColor: "divider",
+                borderRadius: 2,
+                bgcolor: "action.hover"
+              }}
+            >
+              <Typography variant="body1" color="text.secondary">
+                Select an event date above to see the before/after comparison
+              </Typography>
+            </Box>
+          ) : chartData ? (
+            <Box>
+              <Box sx={{ height: { xs: 320, sm: 380 } }}>
+                <Line data={chartData} options={chartOptions} />
+              </Box>
+              <Box sx={{ mt: 2, p: 2, bgcolor: "action.hover", borderRadius: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Event date:</strong> {new Date(eventDate).toLocaleDateString()} &nbsp;|&nbsp;
+                  <strong>Window:</strong> {windowDays} days before & after
+                  {selectedChat !== ALL_CHATS && (
+                    <>
+                      &nbsp;|&nbsp; <strong>Filtered to:</strong> {selectedChat} (sent only)
+                    </>
+                  )}
+                </Typography>
+              </Box>
+            </Box>
+          ) : (
+            <Box sx={{ py: 3, textAlign: "center" }}>
+              <Typography variant="body2" color="text.secondary">
+                Adjust the event date or chat filter to see the timeline.
+              </Typography>
+            </Box>
           )}
         </>
-      )}
-
-      {!eventDate && (
-        <Box sx={{ textAlign: "center", py: 4 }}>
-          <Typography variant="body1" color="text.secondary">
-            Select an event date above to see the before/after comparison
-          </Typography>
-        </Box>
+      ) : (
+        <>
+          <Card
+            elevation={0}
+            sx={{
+              mb: 3,
+              bgcolor: hideSectionIntro ? "grey.50" : alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.08),
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 2
+            }}
+          >
+            <CardContent>
+              {!hideSectionIntro && (
+                <>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, color: FEEDBACK_SECTION_CHART_SENT }}>
+                    Event-Based Activity Analysis
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    Select a significant date to compare your messaging activity before and after that event.
+                  </Typography>
+                </>
+              )}
+              {controlsGrid}
+            </CardContent>
+          </Card>
+          {hasData && beforeSent && afterSent && (
+            <>
+              <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <MetricCard title="Avg Sent/Day" before={beforeSent.avgMessagesPerDay} after={afterSent.avgMessagesPerDay} />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <MetricCard title="Avg Words/Sent Msg" before={beforeSent.avgWordCount} after={afterSent.avgWordCount} />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <MetricCard title="Total Sent" before={beforeSent.totalMessages} after={afterSent.totalMessages} />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  {showReceived && beforeReceived && afterReceived ? (
+                    <MetricCard title="Total Received" before={beforeReceived.totalMessages} after={afterReceived.totalMessages} />
+                  ) : (
+                    <MetricCard title="Total Words" before={beforeSent.totalWords} after={afterSent.totalWords} />
+                  )}
+                </Grid>
+              </Grid>
+              {chartData && (
+                <Card elevation={0} sx={{ border: "1px solid", borderColor: "divider" }}>
+                  <CardContent>
+                    <Box sx={{ height: 400 }}>
+                      <Line data={chartData} options={chartOptions} />
+                    </Box>
+                    <Box sx={{ mt: 2, p: 2, background: "action.hover", borderRadius: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Event date:</strong> {new Date(eventDate).toLocaleDateString()} &nbsp;|&nbsp;
+                        <strong>Window:</strong> {windowDays} days before & after
+                        {selectedChat !== ALL_CHATS && (
+                          <>
+                            &nbsp;|&nbsp; <strong>Filtered to:</strong> {selectedChat} (sent only)
+                          </>
+                        )}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
+          {!eventDate && (
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              <Typography variant="body1" color="text.secondary">
+                Select an event date above to see the before/after comparison
+              </Typography>
+            </Box>
+          )}
+        </>
       )}
     </Box>
   );

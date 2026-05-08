@@ -441,8 +441,96 @@
       "overallData": "Alle Chats",
       "numberMessages": "Anzahl der Nachrichten"
     },
+    "generalInfoCarousel": {
+      "introTitle": "Allgemeine Informationen",
+      "introSubtitle": "Wischen Sie durch Ihre Nachrichtenübersicht, Wort-Highlights und wann Sie am ehesten schreiben.",
+      "wordsBookHeading": "Wären Ihre Chats ein Buch …",
+      "wordsBookLine1a": "Sie würden ",
+      "wordsBookLine1b": " Wörter enthalten, ungefähr ",
+      "wordsBookLine1cHobbit": "% von „Der Hobbit“ von J.R.R. Tolkien (~95.000 Wörter)!",
+      "wordsBookLine1cFellowship": "% von „Die Gemeinschaft des Ringes“ von J.R.R. Tolkien (Band 1 von „Der Herr der Ringe“, ~187.790 Wörter)!",
+      "wordsBookTypingA": "Das wären etwa ",
+      "wordsBookTypingB": " Stunden Tipparbeit!",
+      "wordsBookCoverTitleHobbit": "Der Hobbit",
+      "wordsBookCoverTitleFellowship": "Die Gemeinschaft des Ringes",
+      "wordsBookCoverAuthor": "J.R.R. Tolkien",
+      "wordsBookImpressiveHobbit": "Beeindruckend — das ist die Länge eines ganzen „Hobbit“!",
+      "wordsBookImpressiveFellowship": "Beeindruckend — das ist Trilogie-Niveau!",
+      "wordsBookDecorAriaHobbit": "Dekoratives aufgeschlagenes Buch: linierte Seite und Hobbit-Titel mit Berg-Skizze.",
+      "wordsBookDecorAriaFellowship": "Dekoratives aufgeschlagenes Buch: linierte Seite, Ring-Titel und goldener Ring.",
+      "heatmapTitle": "Sehen Sie, wann Sie am meisten schreiben",
+      "heatmapAria": "Heatmap der gesendeten Wörter nach Wochentag und Tageszeit. Zeilen: 24-Stunden-Zeitfenster.",
+      "heatmapHoursFootnote": "Uhrzeiten: 24-Stunden-Format, aus den Zeitstempeln Ihrer Nachrichten.",
+      "heatmapBandEarlyMorn": "Früher Morgen\n0:00–5:59",
+      "heatmapBandMorning": "Vormittag\n6:00–11:59",
+      "heatmapBandAfternoon": "Nachmittag\n12:00–17:59",
+      "heatmapBandEvening": "Abend\n18:00–21:59",
+      "heatmapBandLateNight": "Späte Nacht\n22:00–23:59",
+      "heatmapConsistency": "Ihre Beständigkeit: An {activeDays} von {totalDays} Tagen ({percent}%) haben Sie etwas geschrieben!",
+      "heatmapPeakDay": "Ihr stärkster Schreibtag: {date} — {words} Wörter",
+      "heatmapPeakDayNone": "Stärkster Schreibtag: Zu wenige stundenweise Wortdaten in dieser Spende."
+    },
+    "lifeEventActivity": {
+      "cardOverline": "Ihre Daten",
+      "title": "Hat ein Lebensereignis Ihre Aktivität verändert?",
+      "intro": "Legen Sie unten ein Ereignisdatum und ein Vergleichsfenster fest. Das erste Diagramm zeigt Ihre täglichen Worttrends insgesamt; die Kennzahlen und die Zeitleiste fokussieren die Aktivität vor und nach diesem Datum."
+    },
+    "comparisonCarousel": {
+      "cardOverline": "Ihre Daten",
+      "introTitle": "Ihre Textnachrichten-Aktivität",
+      "introSubtitle": "Wischen Sie durch: Wer erhält die meisten Wörter, gesendet vs. empfangen, und wann Sie am aktivsten sind.",
+      "mostWordsTitle": "An wen senden Sie die meisten Wörter?",
+      "sentReceivedTitle": "Senden Sie mehr Wörter, als Sie empfangen?",
+      "dayPartsTitle": "Wann sind Sie am aktivsten?",
+      "dayPartsSubtitle": "Anteil gesendeter und empfangener Wörter in den vier Tagesabschnitten.",
+      "back": "Zurück",
+      "next": "Weiter"
+    },
+    "socialContent": {
+      "cardOverline": "Ihr Netzwerk",
+      "title": "Aktivität bei sozialen Inhalten",
+      "intro": "Beiträge, Kommentare und Reaktionen – wie Sie sich auf der Plattform jenseits des Chats engagieren.",
+      "timelineTitle": "Zeitleiste des Engagements",
+      "timelineIntro": "Gesamtansicht Ihrer Aktivität bei sozialen Inhalten im Zeitverlauf.",
+      "styleTitle": "Ihre öffentliche Kommunikation umfasst",
+      "styleIntro": "Anteil von Beiträgen, Kommentaren und Reaktionen in dieser Spende im Vergleich zu Ihrer gesamten öffentlichen Aktivität.",
+      "styleCountComments": "{count} Kommentare",
+      "styleCountReactions": "{count} Reaktionen",
+      "styleCountPosts": "{count} Beiträge",
+      "styleDonutLegendComments": "Kommentare",
+      "styleDonutLegendReactions": "Reaktionen",
+      "styleDonutLegendPosts": "Beiträge",
+      "styleDonutNoData": "In dieser Spende sind keine Beiträge, Kommentare oder Reaktionen enthalten.",
+      "styleArchetypeCreator": "Urheber",
+      "styleArchetypeObserver": "Beobachter",
+      "styleArchetypeConversationalist": "Gesprächspartner",
+      "styleArchetypeConsumer": "Konsument",
+      "styleArchetypeBalanced": "Ausgewogen",
+      "styleArchetypeCreatorDesc": "Der größte Teil Ihrer Aktivität entfällt auf eigene Beiträge.",
+      "styleArchetypeObserverDesc": "Sie beteiligen sich vor allem über Reaktionen – schnelle, leichte Interaktionen.",
+      "styleArchetypeConversationalistDesc": "Sie beteiligen sich vor allem über Kommentare und Gespräche mit anderen.",
+      "styleArchetypeConsumerDesc": "Der größte Teil Ihrer Aktivität entfällt auf Reaktionen und Kommentare zu fremden Inhalten.",
+      "styleArchetypeBalancedDesc": "Ihre Art der Beteiligung ist ausgewogen zwischen Beiträgen, Kommentaren und Reaktionen.",
+      "postsTitle": "Beitragsaktivität",
+      "commentsTitle": "Kommentaraktivität",
+      "reactionsTitle": "Reaktionen"
+    },
+    "chatActivity": {
+      "cardOverline": "Ihre Daten",
+      "cardIntro": "Sehen Sie, mit wem Sie am meisten schreiben und wie schnell Sie in verschiedenen Chats antworten.",
+      "title": "Ihre Aktivität in verschiedenen Chats",
+      "topContactsTitle": "Wer sind Ihre Top-3-Kontakte?",
+      "topContactsFootnote": "Dies zeigt die Gesamtzahl der Nachrichten, die Sie in diesen Chats gesendet haben.",
+      "replyRaceTitle": "In welchem Chat antworten Sie am schnellsten?",
+      "replyRaceSubtitle": "Wäre es ein Wettrennen, {winner} wäre der Sieger!"
+    },
     "statisticsCard": {
       "title": "Überblick über die gesamte Aktivität",
+      "cardOverline": "Ihre Daten",
+      "donationIncludesYears_format": "Ihre Spende umfasst Chat-Daten aus {years} Jahren.",
+      "postcardDecorAria": "Illustration eines Stapels Postkarten",
+      "postcardSent_format": "Sie haben {count} Nachrichten gesendet!",
+      "postcardStack_format": "{count} Postkarten übereinander zu stapeln ergäbe einen Stapel von etwa {meters} Metern Höhe.",
       "thousandSeparator": ".",
       "totalMessages": "Gesamtzahl an Nachrichten",
       "averagePerActiveMonth": "Durchschnitt pro aktivem Monat",
@@ -458,6 +546,8 @@
     },
     "messageComposition": {
       "title": "Nachrichtenzusammensetzung",
+      "cardOverline": "Ihre Daten",
+      "cardIntro": "Länge von Sprachnachrichten und Emoji-Nutzung – wie Ihre Nachrichten zusammengesetzt sind, nicht nur wie viele Sie senden.",
       "messageTypesBarChart": {
         "title": "Nachrichtentypen",
         "description": "Dieses Diagramm zeigt die Verteilung der Nachrichtentypen (Text und Audio), die Sie gesendet und empfangen haben. Klicken Sie <button>HIER</button>, um eine Erklärung mit einem Beispiel zu sehen.",
@@ -518,6 +608,8 @@
     },
     "interactionIntensity": {
       "title": "Interaktionsintensität",
+      "cardOverline": "Ihre Daten",
+      "cardIntro": "Vergleichen Sie, wie sich Ihre Nachrichtenintensität in den Chats im Zeitverlauf darstellt – und sehen Sie monatliche Audiototals, wenn Ihr Export sie enthält.",
       "textHeader": "In Textnachrichten",
       "audioHeader": "In Audionachrichten",
       "animatedIntensityPolarChart": {
@@ -604,7 +696,6 @@
       }
     },
     "dailyActivityTimes": {
-      "title": "Tägliche Aktivitätszeiten",
       "dailyActivityHoursChart": {
         "description": "In diesem Diagramm können Sie sehen, zu welchen Stunden des Tages Sie während der gesamten Zeitspanne der von Ihnen gespendeten Daten aktiv waren. Wenn Sie in einer Stunde mehr Wörter als üblicherweise gesendet haben, hat diese Stunde (Viereck im Diagramm) eine dunklere Farbe. Wenn die Farbe heller ist, dann haben Sie weniger Wörter als üblicherweise gesendet. Wenn Sie sich einen bestimmten Zeitraum genauer ansehen möchten, können Sie hineinzoomen, indem Sie auf das Diagramm klicken und halten, während Sie die Maus nach links oder rechts bewegen, um das Zeitfenster zu erzeugen, in das Sie hineinzoomen möchten. Klicken Sie <button>HIER</button>, um eine Erklärung mit einem Beispiel zu sehen.",
         "yAxis": "Uhrzeit",
@@ -616,7 +707,6 @@
           "text": "<p><b>(1)</b> In diesem Beispiel lässt sich in diesem Bereich eine Veränderung der Aktivitätszeiten beobachten. In dem Zeitraum bei <b>(2)</b> kann man sehen, dass keine Nachrichten ungefähr zwischen 8:00 Uhr und 12:00 Uhr gesendet wurden. Dann in dem Zeitraum bei <b>(3)</b> hat sich dieser Bereich ohne Nachrichten zu den Uhrzeiten ungefähr zwischen 2:00 Uhr und 6:00 Uhr verschoben. Das könnte zum Beispiel an einem Umzug in eine andere Zeitzone oder an einer Veränderung des Schlafrhythmus liegen.</p><p><b>(4)</b> Zum Beispiel hier lassen sich vermehrt dunkle Vierecke beobachten. In diesem Bereich wurden also überdurchschnittlich viele Nachrichten gesendet.</p><p><b>(5)</b> Klicken Sie auf dieses Symbol, um den Graphen herunterzuladen.</p>"
         }
       },
-      "moreAbout": "Mehr über Ihre Täglichen Aktivitätszeiten",
       "dayPartsOverall": {
         "description": "In diesem Graphen können Sie sehen, wie sich die Wörter, die Sie gesendet und empfangen haben auf verschiedene Teile des Tages verteilen. Sie sehen hier gemittelte Werte über den gesamten Zeitraum Ihrer Datenspende.",
         "legend": {
@@ -625,20 +715,16 @@
         },
         "yAxis": "Prozentualer Anteil aller Wörter",
         "xAxis": "Vier Teile des Tages",
+        "bucketStoryNightOwl": "Nachteulen-Zeit",
+        "bucketStoryEarlyBird": "Frühaufsteher",
+        "bucketStoryWorkingHour": "Arbeitszeit",
+        "bucketStoryAfterWork": "Feierabend",
         "example": {
           "image": "images/feedback_example_dayPartsPlot_german.svg",
           "text": "<p class=\"text-left\"><b>(1)</b> In diesem Beispiel wurden im gesamten Zeitraum der Datenspende jeweils weniger als 10% aller Wörter zwischen 0:00 Uhr und 6:00 Uhr und zwischen 6:00 Uhr und 12:00 Uhr gesendet und empfangen. In beiden Teilen des Tages wurden etwas mehr Wörter gesendet als empfangen.</p><p class=\"text-left\"><b>(2)</b> Hingegen zwischen 12:00 Uhr und 18:00 Uhr wurden jeweils knapp unter 40% aller Wörter gesendet und empfangen. <br>Zwischen 18:00 Uhr und 00:00 Uhr wurden sogar knapp unter 45% aller Wörter gesendet bzw. empfangen. In beiden Tagesabschnitten wurden etwas mehr Wörter empfangen als gesendet. </p>"
         }
       },
-      "dayPartsMonthly": {
-        "description": "Im Gegensatz zu dem Graphen oben, können Sie in diesem Graphen <u>pro Monat</u> sehen, wie sich die Wörter, die Sie gesendet haben auf verschiedene Teile des Tages verteilen.",
-        "legend": {
-          "sent": "Gesendete Wörter",
-          "received": "Erhaltene Wörter"
-        },
-        "yAxis": "Prozentualer Anteil aller Wörter",
-        "xAxis": "Vier Teile des Tages"
-      }
+      "moreAbout": "Mehr über Ihre Täglichen Aktivitätszeiten"
     },
     "responseTimes": {
       "title": "Antwortzeiten",

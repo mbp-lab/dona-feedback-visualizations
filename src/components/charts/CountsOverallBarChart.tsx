@@ -1,11 +1,18 @@
 import Box from "@mui/material/Box";
+import { alpha } from "@mui/material/styles";
 import { BarElement, CategoryScale, Chart as ChartJS, ChartDataset, Legend, LinearScale, Tooltip } from "chart.js";
 import { useTranslations } from "next-intl";
 import React from "react";
 import { Bar } from "react-chartjs-2";
 
 import useChartPattern from "@/hooks/useChartPattern";
-import { CHART_COLORS, CHART_LAYOUT, COMMON_CHART_OPTIONS } from "@components/charts/chartConfig";
+import { CHART_LAYOUT, COMMON_CHART_OPTIONS } from "@components/charts/chartConfig";
+import {
+  FEEDBACK_SECTION_CHART_RECEIVED,
+  FEEDBACK_SECTION_CHART_RECEIVED_HOVER,
+  FEEDBACK_SECTION_CHART_SENT,
+  FEEDBACK_SECTION_CHART_SENT_HOVER
+} from "@components/charts/feedbackSectionTheme";
 import DownloadButtons from "@components/charts/DownloadButtons";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
@@ -21,9 +28,10 @@ const CountsOverallBarChart: React.FC<WordCountOverallBarChartProps> = ({ sentWo
   const container_name = `chart-wrapper-${CHART_NAME}`;
 
   const property = mode === "text" ? "word" : "second";
-  const primaryPattern = useChartPattern(CHART_COLORS.primaryLight, CHART_COLORS.primary);
-  const secondaryPattern = useChartPattern(CHART_COLORS.secondaryLight, CHART_COLORS.secondary);
-  const colors = mode === "text" ? [CHART_COLORS.primary, CHART_COLORS.secondary] : [primaryPattern, secondaryPattern];
+  const primaryPattern = useChartPattern(alpha(FEEDBACK_SECTION_CHART_SENT, 0.35), FEEDBACK_SECTION_CHART_SENT);
+  const secondaryPattern = useChartPattern(alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.4), FEEDBACK_SECTION_CHART_RECEIVED_HOVER);
+  const colors =
+    mode === "text" ? [FEEDBACK_SECTION_CHART_SENT, alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.9)] : [primaryPattern, secondaryPattern];
   const chartTexts = useTranslations(`feedback.interactionIntensity.${property}CountOverallBarChart`);
 
   const generateChartData = () => {

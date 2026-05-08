@@ -5,6 +5,7 @@ import { sparseMarks } from "@services/charts/sliderUtils";
 import { useTranslations } from "next-intl";
 
 import { ChartControlButton } from "@/styles/StyledButtons";
+import { feedbackChartControlOutlinedButtonSx, feedbackChartSliderSx } from "@components/charts/feedbackSectionTheme";
 
 const RotatedLabelsSlider = styled(Slider, {
   shouldForwardProp: prop => prop !== "maxValue"
@@ -34,9 +35,17 @@ interface SliderWithButtonsProps {
   marks: { value: number; label: string }[];
   setCurrentFrame: React.Dispatch<React.SetStateAction<number>>;
   alwaysShowValueLabel?: boolean; // if true, always show current selection label on the thumb
+  /** Coral/teal donor palette (Interaction Intensity time slider + controls). */
+  useFeedbackChartPalette?: boolean;
 }
 
-const SliderWithButtons: React.FC<SliderWithButtonsProps> = ({ value, marks, setCurrentFrame, alwaysShowValueLabel = true }) => {
+const SliderWithButtons: React.FC<SliderWithButtonsProps> = ({
+  value,
+  marks,
+  setCurrentFrame,
+  alwaysShowValueLabel = true,
+  useFeedbackChartPalette = false
+}) => {
   const labels = useTranslations("feedback.chartLabels");
   const animationRef = useRef<NodeJS.Timeout | null>(null);
   const theme = useTheme();
@@ -126,15 +135,24 @@ const SliderWithButtons: React.FC<SliderWithButtonsProps> = ({ value, marks, set
           marks={renderedMarks}
           valueLabelDisplay={alwaysShowValueLabel ? "on" : "auto"}
           valueLabelFormat={v => marks[v]?.label ?? String(v)}
+          sx={useFeedbackChartPalette ? feedbackChartSliderSx : undefined}
         />
       </Box>
 
       {/* Buttons, side by side */}
       <Box display="flex" gap={1} flexDirection="row" alignItems="center">
-        <ChartControlButton variant="outlined" onClick={handleStartAnimation}>
+        <ChartControlButton
+          variant="outlined"
+          onClick={handleStartAnimation}
+          sx={useFeedbackChartPalette ? feedbackChartControlOutlinedButtonSx : undefined}
+        >
           {labels("start")}
         </ChartControlButton>
-        <ChartControlButton variant="outlined" onClick={handleReset}>
+        <ChartControlButton
+          variant="outlined"
+          onClick={handleReset}
+          sx={useFeedbackChartPalette ? feedbackChartControlOutlinedButtonSx : undefined}
+        >
           {labels("resetView")}
         </ChartControlButton>
       </Box>

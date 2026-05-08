@@ -1,12 +1,20 @@
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { alpha } from "@mui/material/styles";
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
-import React from "react";
+import { useTranslations } from "next-intl";
+import React, { useMemo } from "react";
 import { Doughnut } from "react-chartjs-2";
 
-import { CHART_LAYOUT } from "@components/charts/chartConfig";
 import DownloadButtons from "@components/charts/DownloadButtons";
+import {
+  FEEDBACK_SECTION_ACCENT,
+  FEEDBACK_SECTION_CHART_RECEIVED,
+  FEEDBACK_SECTION_CHART_SENT,
+  FEEDBACK_SECTION_TEXT_MAIN as TEXT_MAIN,
+  FEEDBACK_SECTION_TEXT_MUTED as TEXT_MUTED
+} from "@components/charts/feedbackSectionTheme";
 import { CommentStats, PostStats, ReactionStats } from "@models/graphData";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -17,51 +25,41 @@ interface EngagementStyleChartProps {
   reactionStats?: ReactionStats;
 }
 
-const SEGMENT_COLORS = {
-  posts: "#4BC0C0",
-  comments: "#36A2EB",
-  reactions: "#FF6384"
-};
+type ArchetypeKey = "creator" | "observer" | "conversationalist" | "consumer" | "balanced";
 
-function getEngagementLabel(posts: number, comments: number, reactions: number): { label: string; description: string } {
+function getEngagementArchetypeKey(posts: number, comments: number, reactions: number): ArchetypeKey {
   const total = posts + comments + reactions;
-  if (total === 0) return { label: "", description: "" };
+  if (total === 0) return "balanced";
 
   const postPct = posts / total;
   const commentPct = comments / total;
   const reactionPct = reactions / total;
 
-  if (postPct >= 0.5) {
-    return {
-      label: "Creator",
-      description: "Most of your activity comes from creating original posts."
-    };
-  }
-  if (reactionPct >= 0.6) {
-    return {
-      label: "Observer",
-      description: "You engage primarily through reactions -- quick, lightweight interactions."
-    };
-  }
-  if (commentPct >= 0.4) {
-    return {
-      label: "Conversationalist",
-      description: "You prefer engaging through comments and conversations with others."
-    };
-  }
-  if (commentPct + reactionPct >= 0.8) {
-    return {
-      label: "Consumer",
-      description: "Most of your activity comes from reacting to and commenting on others' content."
-    };
-  }
-  return {
-    label: "Balanced",
-    description: "You have a well-rounded engagement style across creating, commenting, and reacting."
-  };
+  if (postPct >= 0.5) return "creator";
+  if (reactionPct >= 0.6) return "observer";
+  if (commentPct >= 0.4) return "conversationalist";
+  if (commentPct + reactionPct >= 0.8) return "consumer";
+  return "balanced";
 }
 
+const ARCHETYPE_LABEL: Record<ArchetypeKey, string> = {
+  creator: "styleArchetypeCreator",
+  observer: "styleArchetypeObserver",
+  conversationalist: "styleArchetypeConversationalist",
+  consumer: "styleArchetypeConsumer",
+  balanced: "styleArchetypeBalanced"
+};
+
+const ARCHETYPE_DESC: Record<ArchetypeKey, string> = {
+  creator: "styleArchetypeCreatorDesc",
+  observer: "styleArchetypeObserverDesc",
+  conversationalist: "styleArchetypeConversationalistDesc",
+  consumer: "styleArchetypeConsumerDesc",
+  balanced: "styleArchetypeBalancedDesc"
+};
+
 const EngagementStyleChart: React.FC<EngagementStyleChartProps> = ({ postStats, commentStats, reactionStats }) => {
+  const t = useTranslations("feedback.socialContent");
   const CHART_NAME = "engagement-style-chart";
   const containerId = `chart-wrapper-${CHART_NAME}`;
 
@@ -70,86 +68,146 @@ const EngagementStyleChart: React.FC<EngagementStyleChartProps> = ({ postStats, 
   const totalReactions = reactionStats?.totalReactions ?? 0;
   const total = totalPosts + totalComments + totalReactions;
 
-  const segments: { label: string; value: number; color: string }[] = [];
-  if (totalPosts > 0) segments.push({ label: "Posts", value: totalPosts, color: SEGMENT_COLORS.posts });
-  if (totalComments > 0) segments.push({ label: "Comments", value: totalComments, color: SEGMENT_COLORS.comments });
-  if (totalReactions > 0) segments.push({ label: "Reactions", value: totalReactions, color: SEGMENT_COLORS.reactions });
+  /** Always three slices: comments, reactions, posts (matches legend and platform copy). */
+  const segmentMeta = useMemo(
+    () =>
+      [
+        {
+          label: t("styleDonutLegendComments"),
+          value: totalComments,
+          color: alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.92),
+          border: alpha(FEEDBACK_SECTION_CHART_RECEIVED, 1)
+        },
+        {
+          label: t("styleDonutLegendReactions"),
+          value: totalReactions,
+          color: alpha(FEEDBACK_SECTION_CHART_SENT, 0.9),
+          border: alpha(FEEDBACK_SECTION_CHART_SENT, 1)
+        },
+        {
+          label: t("styleDonutLegendPosts"),
+          value: totalPosts,
+          color: alpha(FEEDBACK_SECTION_ACCENT, 0.88),
+          border: alpha(FEEDBACK_SECTION_ACCENT, 1)
+        }
+      ] as const,
+    [t, totalComments, totalReactions, totalPosts]
+  );
 
-  const doughnutData = {
-    labels: segments.map(s => s.label),
-    datasets: [
-      {
-        data: segments.map(s => s.value),
-        backgroundColor: segments.map(s => s.color),
-        borderWidth: 1
+  const archetypeKey = getEngagementArchetypeKey(totalPosts, totalComments, totalReactions);
+  const archetypeLabel = t(ARCHETYPE_LABEL[archetypeKey]);
+  const archetypeDescription = t(ARCHETYPE_DESC[archetypeKey]);
+
+  const doughnutData = useMemo(
+    () => ({
+      labels: segmentMeta.map(s => s.label),
+      datasets: [
+        {
+          data: segmentMeta.map(s => s.value),
+          backgroundColor: segmentMeta.map(s => s.color),
+          borderColor: segmentMeta.map(s => s.border),
+          borderWidth: 1.5,
+          hoverOffset: 6
+        }
+      ]
+    }),
+    [segmentMeta]
+  );
+
+  const centerTextPlugin = useMemo(
+    () => ({
+      id: "centerText",
+      beforeDraw(chart: any) {
+        if (total === 0) return;
+        const { ctx, width, height } = chart;
+        ctx.save();
+        ctx.font = "600 15px 'Inter', system-ui, sans-serif";
+        ctx.fillStyle = TEXT_MAIN;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(archetypeLabel, width / 2, height / 2);
+        ctx.restore();
       }
-    ]
-  };
-
-  const { label: styleLabel, description: styleDescription } = getEngagementLabel(totalPosts, totalComments, totalReactions);
-
-  const centerTextPlugin = {
-    id: "centerText",
-    beforeDraw(chart: any) {
-      const { ctx, width, height } = chart;
-      ctx.save();
-      ctx.font = "bold 18px sans-serif";
-      ctx.fillStyle = "#333";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(styleLabel, width / 2, height / 2);
-      ctx.restore();
-    }
-  };
+    }),
+    [archetypeLabel, total]
+  );
 
   return (
-    <Box>
-      <Stack direction="row" spacing={3} justifyContent="center" flexWrap="wrap" sx={{ mb: 2 }}>
-        {segments.map(s => (
-          <Box key={s.label} sx={{ textAlign: "center" }}>
-            <Typography variant="h5" fontWeight="bold" sx={{ color: s.color }}>
-              {total > 0 ? `${((s.value / total) * 100).toFixed(0)}%` : "0%"}
-            </Typography>
-            <Typography variant="caption">{s.label}</Typography>
-          </Box>
-        ))}
+    <Box sx={{ position: "relative", width: "100%" }}>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={{ xs: 1, sm: 3 }}
+        justifyContent="center"
+        alignItems="center"
+        sx={{ mb: 2, flexWrap: "wrap" }}
+      >
+        <Typography variant="body2" sx={{ color: TEXT_MAIN, fontWeight: 700, fontSize: { xs: "0.9rem", sm: "0.95rem" } }}>
+          {t("styleCountComments", { count: totalComments })}
+        </Typography>
+        <Typography variant="body2" sx={{ color: TEXT_MAIN, fontWeight: 700, fontSize: { xs: "0.9rem", sm: "0.95rem" } }}>
+          {t("styleCountReactions", { count: totalReactions })}
+        </Typography>
+        <Typography variant="body2" sx={{ color: TEXT_MAIN, fontWeight: 700, fontSize: { xs: "0.9rem", sm: "0.95rem" } }}>
+          {t("styleCountPosts", { count: totalPosts })}
+        </Typography>
       </Stack>
 
-      <Box id={containerId} position="relative" p={CHART_LAYOUT.paddingX}>
-        <Box display="flex" justifyContent="right" alignItems="center" mb={1}>
+      <Box id={containerId} sx={{ position: "relative", px: { xs: 0.5, sm: 1 } }}>
+        <Box display="flex" justifyContent="flex-end" alignItems="center" sx={{ position: "absolute", top: 0, right: 0, zIndex: 1 }}>
           <DownloadButtons chartId={containerId} fileNamePrefix={CHART_NAME} />
         </Box>
-        <Box sx={{ width: "100%", height: CHART_LAYOUT.responsiveChartHeight, maxWidth: 400, mx: "auto" }}>
-          <Doughnut
-            data={doughnutData}
-            plugins={[centerTextPlugin]}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              cutout: "55%",
-              plugins: {
-                legend: {
-                  display: true,
-                  position: "right" as const,
-                  labels: { font: { size: 11 }, padding: 8, boxWidth: 14 }
-                },
-                tooltip: {
-                  callbacks: {
-                    label: (context: any) => {
-                      const pct = total > 0 ? ((context.raw / total) * 100).toFixed(1) : "0";
-                      return `${context.label}: ${context.raw} (${pct}%)`;
+        {total === 0 ? (
+          <Typography variant="body2" sx={{ textAlign: "center", color: TEXT_MUTED, py: 4 }}>
+            {t("styleDonutNoData")}
+          </Typography>
+        ) : (
+          <Box sx={{ width: "100%", height: { xs: 260, sm: 300 }, maxWidth: 420, mx: "auto", pt: 1 }}>
+            <Doughnut
+              data={doughnutData}
+              plugins={[centerTextPlugin]}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "58%",
+                plugins: {
+                  legend: {
+                    display: true,
+                    position: "right",
+                    labels: {
+                      color: TEXT_MAIN,
+                      font: { size: 12, weight: "600" },
+                      padding: 12,
+                      boxWidth: 14,
+                      usePointStyle: true,
+                      pointStyle: "rectRounded"
+                    }
+                  },
+                  tooltip: {
+                    backgroundColor: alpha(TEXT_MAIN, 0.92),
+                    titleColor: "#f8fafc",
+                    bodyColor: "#f8fafc",
+                    borderColor: alpha("#ffffff", 0.12),
+                    borderWidth: 1,
+                    padding: 12,
+                    cornerRadius: 8,
+                    callbacks: {
+                      label: (context: any) => {
+                        const raw = context.raw as number;
+                        const pct = total > 0 ? ((raw / total) * 100).toFixed(1) : "0";
+                        return `${context.label}: ${raw} (${pct}%)`;
+                      }
                     }
                   }
                 }
-              }
-            }}
-          />
-        </Box>
+              }}
+            />
+          </Box>
+        )}
       </Box>
 
-      {styleDescription && (
-        <Typography variant="body2" sx={{ mt: 2, textAlign: "center", px: 2, fontStyle: "italic" }}>
-          {styleDescription}
+      {total > 0 && archetypeDescription && (
+        <Typography variant="body2" sx={{ mt: 2, textAlign: "center", px: 1, color: TEXT_MUTED, lineHeight: 1.55 }}>
+          {archetypeDescription}
         </Typography>
       )}
     </Box>

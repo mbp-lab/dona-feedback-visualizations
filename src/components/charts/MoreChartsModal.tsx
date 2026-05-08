@@ -56,10 +56,6 @@ const MoreChartsModal: React.FC<MoreChartsModalProps> = ({ open, onClose, graphD
             {
               descriptionKey: "dayPartsOverall",
               chartType: ChartType.DayPartsActivityOverallChart
-            },
-            {
-              descriptionKey: "dayPartsMonthly",
-              chartType: ChartType.AnimatedDayPartsActivityChart
             }
           ]
         : section == "responseTimes"

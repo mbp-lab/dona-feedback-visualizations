@@ -3,27 +3,21 @@ import Typography from "@mui/material/Typography";
 import React from "react";
 
 import AnimatedCountsPerChatBarChart from "@components/charts/AnimatedCountsPerChatBarChart";
-import AnimatedDayPartsActivityChart from "@components/charts/AnimatedDayPartsActivityChart";
 import AnimatedIntensityPolarChart from "@components/charts/AnimatedIntensityPolarChart";
-import AnimatedResponseTimeBarChart from "@components/charts/AnimatedResponseTimeBarChart";
 import AudioLengthsBarChart from "@components/charts/AudioLengthsBarChart";
 import CommentActivityChart from "@components/charts/CommentActivityChart";
 import CountsOverallBarChart from "@components/charts/CountsOverallBarChart";
-import DailyActivityChart from "@components/charts/DailyActivityChart";
 import DayPartsActivityOverallChart from "@components/charts/DayPartsActivityOverallChart";
 import EmojiBarChart from "@components/charts/EmojiBarChart";
 import EngagementStyleChart from "@components/charts/EngagementStyleChart";
-import MessageTypesBarChart from "@components/charts/MessageTypesBarChart";
 import PostActivityChart from "@components/charts/PostActivityChart";
 import ReactionBreakdownChart from "@components/charts/ReactionBreakdownChart";
 import SocialEngagementTimelineChart from "@components/charts/SocialEngagementTimelineChart";
-import ResponseTimeBarChart from "@components/charts/ResponseTimeBarChart";
 import SentReceivedSlidingWindowChart from "@components/charts/SentReceivedSlidingWindowChart";
 import { GraphData } from "@models/graphData";
 import pick from "@services/basicHelpers";
 
 export enum ChartType {
-  MessageTypesBarChart = "messageTypesBarChart",
   AudioLengthsBarChart = "audioLengthsBarChart",
   EmojiBarChart = "emojiBarChart",
   AnimatedIntensityPolarChart = "animatedIntensityPolarChart",
@@ -33,11 +27,7 @@ export enum ChartType {
   SecondCountOverallBarChart = "secondCountOverallBarChart",
   WordCountSlidingWindowMean = "wordCountSlidingWindowMean",
   SecondCountSlidingWindowMean = "secondCountSlidingWindowMean",
-  ResponseTimeBarChart = "responseTimeBarChart",
-  AnimatedResponseTimeBarChart = "animatedResponseTimeBarChart",
-  DailyActivityHoursChart = "dailyActivityHoursChart",
   DayPartsActivityOverallChart = "dayPartsActivityOverallChart",
-  AnimatedDayPartsActivityChart = "animatedDayPartsActivityChart",
   PostActivityChart = "postActivityChart",
   CommentActivityChart = "commentActivityChart",
   ReactionBreakdownChart = "reactionBreakdownChart",
@@ -49,9 +39,11 @@ interface ChartContainerProps {
   type: ChartType;
   data: GraphData;
   dataSourceValue?: string;
+  /** Tighter day-parts chart padding/height for carousel slides (labels stay visible). */
+  compact?: boolean;
 }
 
-export default function ChartContainer({ type, data }: ChartContainerProps) {
+export default function ChartContainer({ type, data, compact = false }: ChartContainerProps) {
   // For charts that show data per conversation, keep only the ones selected by the user
   const selectedChatsWordsData = pick(data.monthlyWordsPerConversation, data.focusConversations);
   const selectedChatsSecondsData = pick(data.monthlySecondsPerConversation, data.focusConversations);
@@ -67,8 +59,6 @@ export default function ChartContainer({ type, data }: ChartContainerProps) {
         return <AnimatedCountsPerChatBarChart dataMonthlyPerConversation={selectedChatsSecondsData} mode="audio" />;
 
       // Message composition
-      case ChartType.MessageTypesBarChart:
-        return <MessageTypesBarChart basicStatistics={data.basicStatistics} />;
       case ChartType.AudioLengthsBarChart:
         return <AudioLengthsBarChart audioLengthDistribution={data.audioLengthDistribution} />;
       case ChartType.EmojiBarChart:
@@ -96,24 +86,13 @@ export default function ChartContainer({ type, data }: ChartContainerProps) {
       case ChartType.SecondCountSlidingWindowMean:
         return <SentReceivedSlidingWindowChart slidingWindowMeanDailyWords={data.slidingWindowMeanDailySeconds} mode="audio" />;
 
-      // Response times
-      case ChartType.ResponseTimeBarChart:
-        return <ResponseTimeBarChart responseTimes={data.answerTimes} />;
-      case ChartType.AnimatedResponseTimeBarChart:
-        return <AnimatedResponseTimeBarChart answerTimes={data.answerTimes} />;
-
-      // Daily activity times
-      case ChartType.DailyActivityHoursChart:
-        return (
-          <DailyActivityChart dataSentPerConversation={data.dailySentHoursPerConversation} listOfConversations={data.focusConversations} />
-        );
+      // Day parts
       case ChartType.DayPartsActivityOverallChart:
-        return <DayPartsActivityOverallChart dailySentHours={data.dailySentHours} dailyReceivedHours={data.dailyReceivedHours} />;
-      case ChartType.AnimatedDayPartsActivityChart:
         return (
-          <AnimatedDayPartsActivityChart
-            dataSentPerConversation={data.dailySentHoursPerConversation}
-            listOfConversations={data.focusConversations}
+          <DayPartsActivityOverallChart
+            dailySentHours={data.dailySentHours}
+            dailyReceivedHours={data.dailyReceivedHours}
+            compact={compact}
           />
         );
 
