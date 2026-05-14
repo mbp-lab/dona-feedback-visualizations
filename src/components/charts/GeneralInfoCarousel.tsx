@@ -5,7 +5,6 @@ import SwipeableViews from "react-swipeable-views";
 import { useLocale, useTranslations } from "next-intl";
 
 import { StatisticsSummaryPanel } from "@components/StatisticsCard";
-import WritingActivityHeatmapSlide from "@components/charts/WritingActivityHeatmapSlide";
 import { GraphData } from "@models/graphData";
 import {
   FEEDBACK_SECTION_CHART_RECEIVED,
@@ -14,7 +13,6 @@ import {
   FEEDBACK_SECTION_CHART_SENT_HOVER,
   FEEDBACK_SECTION_SURFACE as SURFACE,
   FEEDBACK_SECTION_TEXT_MAIN as TEXT_MAIN,
-  FEEDBACK_SECTION_TEXT_MUTED as TEXT_MUTED,
   feedbackChartPaletteOuterSx
 } from "@components/charts/feedbackSectionTheme";
 
@@ -210,15 +208,11 @@ export default function GeneralInfoCarousel({ data, isWhatsApp = false }: Genera
   const t = useTranslations("feedback.generalInfoCarousel");
   const tNav = useTranslations("feedback.comparisonCarousel");
   const [activeStep, setActiveStep] = useState(0);
-  const maxSteps = 5;
+  const maxSteps = 2;
 
-  const { sentWords, activeDays, totalDays, activeDaysPercentage, wordsPerMessage } = useMemo(() => {
+  const { sentWords } = useMemo(() => {
     return {
-      sentWords: data.basicStatistics?.wordsTotal?.sent ?? 0,
-      activeDays: data.generalInfoStats?.activityStats?.activeDays ?? 0,
-      totalDays: data.generalInfoStats?.activityStats?.totalDays ?? 0,
-      activeDaysPercentage: data.generalInfoStats?.activityStats?.activityPercentage ?? 0,
-      wordsPerMessage: data.generalInfoStats?.avgWordsPerSentMessage ?? 0
+      sentWords: data.basicStatistics?.wordsTotal?.sent ?? 0
     };
   }, [data]);
 
@@ -238,20 +232,6 @@ export default function GeneralInfoCarousel({ data, isWhatsApp = false }: Genera
   const handleNext = () => setActiveStep(prev => (prev + 1) % maxSteps);
   const handleBack = () => setActiveStep(prev => (prev - 1 + maxSteps) % maxSteps);
   const handleStepChange = (step: number) => setActiveStep(step);
-
-  const introSlideShell = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 460,
-    p: 3,
-    textAlign: "center" as const,
-    color: TEXT_MAIN,
-    borderLeft: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22)}`,
-    borderRight: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22)}`,
-    bgcolor: SURFACE
-  };
 
   const slideBoxStyles = {
     display: "flex",
@@ -275,46 +255,53 @@ export default function GeneralInfoCarousel({ data, isWhatsApp = false }: Genera
         <Box sx={{ flex: 1, bgcolor: FEEDBACK_SECTION_CHART_SENT }} />
         <Box sx={{ flex: 1, bgcolor: FEEDBACK_SECTION_CHART_RECEIVED }} />
       </Box>
+      <Box
+        sx={{
+          px: { xs: 2, sm: 3 },
+          pt: 2.5,
+          pb: 2,
+          textAlign: "center",
+          bgcolor: SURFACE,
+          color: TEXT_MAIN,
+          borderLeft: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22)}`,
+          borderRight: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22)}`,
+          borderBottom: `1px solid ${alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.14)}`
+        }}
+      >
+        <Typography
+          variant="overline"
+          sx={{
+            display: "block",
+            letterSpacing: "0.2em",
+            fontWeight: 700,
+            fontSize: "0.65rem",
+            color: FEEDBACK_SECTION_CHART_SENT,
+            mb: 0.75
+          }}
+        >
+          {tNav("cardOverline")}
+        </Typography>
+        <Typography
+          variant="h3"
+          sx={{
+            fontWeight: 800,
+            letterSpacing: "-0.03em",
+            color: TEXT_MAIN,
+            fontSize: { xs: "1.35rem", sm: "1.75rem" },
+            lineHeight: 1.2,
+            mb: 0
+          }}
+        >
+          {t("introTitle")}
+        </Typography>
+      </Box>
       <SwipeableViews
         axis={theme.direction === "rtl" ? "x-reverse" : "x"}
         index={activeStep}
         onChangeIndex={handleStepChange}
         enableMouseEvents
       >
-        {/* slide 1: intro — same structure as “Your texting activity” */}
-        <Box key="header" sx={introSlideShell}>
-          <Typography
-            variant="overline"
-            sx={{
-              display: "block",
-              letterSpacing: "0.2em",
-              fontWeight: 700,
-              fontSize: "0.65rem",
-              color: FEEDBACK_SECTION_CHART_SENT,
-              mb: 1
-            }}
-          >
-            {tNav("cardOverline")}
-          </Typography>
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 800,
-              letterSpacing: "-0.03em",
-              color: TEXT_MAIN,
-              fontSize: { xs: "1.35rem", sm: "1.75rem" },
-              lineHeight: 1.2,
-              mb: 1.5
-            }}
-          >
-            {t("introTitle")}
-          </Typography>
-          <Typography variant="body2" sx={{ color: TEXT_MUTED, maxWidth: 420, lineHeight: 1.55 }}>
-            {t("introSubtitle")}
-          </Typography>
-        </Box>
-
-        {/* slide 2: message totals + postcard (overview panel) */}
+        {/* slide 1: message totals + postcard (overview panel) */}
         <Box
           key="message-totals"
           sx={{
@@ -340,7 +327,7 @@ export default function GeneralInfoCarousel({ data, isWhatsApp = false }: Genera
           </Box>
         </Box>
 
-        {/* slide 3: word count — book metaphor (Hobbit if X &lt; 100k, Fellowship if X ≥ 100k) */}
+        {/* slide 2: word count — book metaphor (Hobbit if X &lt; 100k, Fellowship if X ≥ 100k) */}
         <Box
           key="words"
           sx={{
@@ -401,55 +388,6 @@ export default function GeneralInfoCarousel({ data, isWhatsApp = false }: Genera
                 {t("wordsBookImpressiveHobbit")}
               </Typography>
             ) : null}
-          </Box>
-        </Box>
-
-        {/* slide 4: words per message */}
-        <Box key="words-per-message" sx={slideBoxStyles}>
-          <Typography variant="body1" paragraph>
-            You sent
-          </Typography>
-          <Typography variant="h4" sx={{ fontWeight: "bold", mb: 4, color: FEEDBACK_SECTION_CHART_SENT }}>
-            {wordsPerMessage} words per message.
-          </Typography>
-          <Typography variant="body1" paragraph>
-            An average sentence is 15-20 words, so you would send
-          </Typography>
-          <Typography variant="h4" sx={{ fontWeight: "bold", mb: 2, color: FEEDBACK_SECTION_CHART_RECEIVED }}>
-            {wordsPerMessage > 0 ? Math.round((20 / wordsPerMessage) * 10) / 10 : "—"} messages
-          </Typography>
-          <Typography variant="body1">to equal one average sentence!</Typography>
-        </Box>
-
-        {/* slide 5: weekday × time-of-day heatmap + consistency & peak writing day */}
-        <Box
-          key="writing-heatmap"
-          sx={{
-            ...slideBoxStyles,
-            justifyContent: "flex-start",
-            alignItems: "stretch",
-            py: { xs: 1.25, sm: 1.75 },
-            px: { xs: 1, sm: 1.75 },
-            overflow: "hidden",
-            minHeight: 0
-          }}
-        >
-          <Box
-            sx={{
-              flex: "1 1 auto",
-              minHeight: 0,
-              width: "100%",
-              display: "flex",
-              flexDirection: "column"
-            }}
-          >
-            <WritingActivityHeatmapSlide
-              dailySentHours={data.dailySentHours ?? []}
-              activeDays={activeDays}
-              totalDays={totalDays}
-              activityPercentage={activeDaysPercentage}
-              locale={locale}
-            />
           </Box>
         </Box>
       </SwipeableViews>

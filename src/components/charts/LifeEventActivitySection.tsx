@@ -7,7 +7,6 @@ import Typography from "@mui/material/Typography";
 import { useTranslations } from "next-intl";
 
 import EventComparisonChart from "@components/charts/EventComparisonChart";
-import SentReceivedSlidingWindowChart from "@components/charts/SentReceivedSlidingWindowChart";
 import {
   FEEDBACK_SECTION_CHART_RECEIVED,
   FEEDBACK_SECTION_CHART_SENT,
@@ -32,11 +31,10 @@ interface LifeEventActivitySectionProps {
 }
 
 /**
- * Life-event analysis: date controls, word trend, metrics, and timeline.
+ * Life-event analysis: date controls, optional before/after metrics, and message timeline.
  */
 export default function LifeEventActivitySection({ graphData }: LifeEventActivitySectionProps) {
   const t = useTranslations("feedback.lifeEventActivity");
-  const ii = useTranslations("feedback.interactionIntensity");
 
   return (
     <Box sx={{ ...feedbackChartPaletteOuterSx, mt: 2 }}>
@@ -95,14 +93,6 @@ export default function LifeEventActivitySection({ graphData }: LifeEventActivit
         <Box sx={{ ...feedbackPlotPanelSx, p: { xs: 1.5, sm: 2 } }}>
           <EventComparisonChart
             hideSectionIntro
-            chartSlotLeftTitle={ii("wordCountSlidingWindowMean.title")}
-            chartSlotLeft={
-              <SentReceivedSlidingWindowChart
-                slidingWindowMeanDailyWords={graphData.slidingWindowMeanDailyWords}
-                mode="text"
-                expandToContainer
-              />
-            }
             sentMessages={toMessageData(graphData.dailySentHours)}
             receivedMessages={toMessageData(graphData.dailyReceivedHours)}
             perChatSentMessages={graphData.dailySentHoursPerConversation.map((points, i) => ({

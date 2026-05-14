@@ -445,7 +445,7 @@
     },
     "generalInfoCarousel": {
       "introTitle": "Ընդհանուր տեղեկություն",
-      "introSubtitle": "Դիտեք Ձեր հաղորդագրությունների ամփոփումը, բառային նշումները և երբ եք ամենաշատը գրում։",
+      "introSubtitle": "Դիտեք Ձեր հաղորդագրությունների ամփոփումը և բառային նշումները։",
       "wordsBookHeading": "Եթե Ձեր չատերը գիրք լինեին …",
       "wordsBookLine1a": "Դրանք կպարունակեին ",
       "wordsBookLine1b": " բառ, մոտավորապես ",
@@ -460,7 +460,6 @@
       "wordsBookImpressiveFellowship": "Հիանալի է՝ արդեն եռմասանի մասշտաբով։",
       "wordsBookDecorAriaHobbit": "Ձևավորական բաց գիրք՝ գծավոր էջով, Հոբիտ վերնագրով և սարերի նկարով։",
       "wordsBookDecorAriaFellowship": "Ձևավորական բաց գիրք՝ գծավոր էջով, Մատանին վերնագրով և ոսկեզօն մատանի։",
-      "heatmapTitle": "Տեսեք, թե երբ եք ամենաշատը գրում",
       "heatmapAria": "Ուղարկած բառերի ջերմային քարտեզ՝ ըստ շաբաթվա օրվա և օրվա ժամի։ Տողերը՝ 24-ժամյա միջակայքեր։",
       "heatmapHoursFootnote": "Ժամերը 24-ժամյա ձևաչափով են, հիմնված Ձեր հաղորդագրությունների ժամանակի նշիչների վրա։",
       "heatmapBandEarlyMorn": "Առավոտային շուտ\n0:00–5:59",
@@ -475,12 +474,12 @@
     "lifeEventActivity": {
       "cardOverline": "Ձեր տվյալները",
       "title": "Did any life event change your activity?",
-      "intro": "Set an event date and comparison window below. The first chart shows your overall daily word trends; the summary cards and timeline focus on activity before and after that date."
+      "intro": "Ըստ ցանկության՝ ստորև ընտրեք ամսաթիվ՝ մինչև/հետո համեմատելու համար, կամ թողեք դատարկ՝ ամբողջ պատմությունը տեսնելու համար։"
     },
     "comparisonCarousel": {
       "cardOverline": "Ձեր տվյալները",
       "introTitle": "Ձեր տեքստային ակտիվությունը",
-      "introSubtitle": "Դիտեք՝ ում եք ամենաշատ բառեր ուղարկում, ուղարկվածն ու ստացվածը, և օրվա որ հատվածում եք ամենաակտիվ։",
+      "introSubtitle": "Դիտեք՝ ում եք ամենաշատ բառեր ուղարկում, ուղարկվածն ու ստացվածը, օրվա որ մասում եք ամենաակտիվ, և երբ եք սովորաբար ամենաշատը գրում (շաբաթվա օր × ժամ)։",
       "mostWordsTitle": "Ում եք ամենաշատ բառեր ուղարկում։",
       "sentReceivedTitle": "Ավելի շատ բառեր եք ուղարկում, քան ստանում։",
       "dayPartsTitle": "Ե՞րբ եք ամենաակտիվ։",
@@ -519,12 +518,17 @@
     },
     "chatActivity": {
       "cardOverline": "Your data",
-      "cardIntro": "See who you message most and how quickly you reply across your chats.",
       "title": "Your activity in different chats",
       "topContactsTitle": "Who are your Top 3 contacts?",
       "topContactsFootnote": "This shows the total messages you sent in these chats.",
       "replyRaceTitle": "In which chat do you reply the fastest?",
-      "replyRaceSubtitle": "If this was a race, {winner} would be the winner!"
+      "replyRaceSubtitle": "If this was a race, {winner} would be the winner!",
+      "summariesConversationLabel": "Conversation",
+      "summariesSlideTitle": "Chat summaries",
+      "summariesSlideIntro": "Pick a chat to see messages sent, quick replies, and your longest streak there.",
+      "summariesStatMessagesWords": "You sent {messages} messages and {words} words in this chat.",
+      "summariesStatQuickReply": "{percent}% of your replies were in less than a minute.",
+      "summariesStatStreak": "You had a {days} day texting streak."
     },
     "statisticsCard": {
       "title": "Պատկերացում Ձեր ակտիվության մասին",

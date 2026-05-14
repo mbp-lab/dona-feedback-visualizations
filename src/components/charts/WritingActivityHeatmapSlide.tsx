@@ -61,32 +61,6 @@ function buildGrid(points: DailyHourPoint[]): { grid: number[][]; maxCell: numbe
   return { grid, maxCell };
 }
 
-function peakDayWordsFromHours(points: DailyHourPoint[], locale: string): { dateLabel: string; words: number } | null {
-  if (points.length === 0) return null;
-  const byDay = new Map<string, number>();
-  for (const p of points) {
-    const key = `${p.year}-${p.month}-${p.date}`;
-    byDay.set(key, (byDay.get(key) || 0) + p.wordCount);
-  }
-  let bestKey = "";
-  let bestWords = -1;
-  for (const [key, w] of byDay) {
-    if (w > bestWords) {
-      bestWords = w;
-      bestKey = key;
-    }
-  }
-  if (!bestKey || bestWords <= 0) return null;
-  const [y, m, d] = bestKey.split("-").map(Number);
-  const peakDate = new Date(y, m - 1, d);
-  const dateLabel = peakDate.toLocaleDateString(locale, {
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  });
-  return { dateLabel, words: bestWords };
-}
-
 function splitBandLabel(text: string): { name: string; range: string | null } {
   const i = text.indexOf("\n");
   if (i === -1) return { name: text, range: null };
@@ -112,23 +86,13 @@ function cellHeatColor(value: number, maxCell: number): string {
 
 export interface WritingActivityHeatmapSlideProps {
   dailySentHours: DailyHourPoint[];
-  activeDays: number;
-  totalDays: number;
-  activityPercentage: number;
   locale: string;
 }
 
-export default function WritingActivityHeatmapSlide({
-  dailySentHours,
-  activeDays,
-  totalDays,
-  activityPercentage,
-  locale
-}: WritingActivityHeatmapSlideProps) {
+export default function WritingActivityHeatmapSlide({ dailySentHours, locale }: WritingActivityHeatmapSlideProps) {
   const t = useTranslations("feedback.generalInfoCarousel");
 
   const { grid, maxCell } = useMemo(() => buildGrid(dailySentHours), [dailySentHours]);
-  const peak = useMemo(() => peakDayWordsFromHours(dailySentHours, locale), [dailySentHours, locale]);
 
   const weekdayLabels = useMemo(() => {
     const labels: string[] = [];
@@ -137,8 +101,6 @@ export default function WritingActivityHeatmapSlide({
     }
     return labels;
   }, [locale]);
-
-  const wordsFmt = peak ? peak.words.toLocaleString(locale) : "";
 
   return (
     <Box
@@ -155,21 +117,6 @@ export default function WritingActivityHeatmapSlide({
         overflow: "hidden"
       }}
     >
-      <Typography
-        variant="h5"
-        sx={{
-          fontWeight: 800,
-          color: TEXT_MAIN,
-          fontSize: { xs: "0.98rem", sm: "1.15rem" },
-          lineHeight: 1.3,
-          textAlign: "center",
-          px: 0.5,
-          flexShrink: 0
-        }}
-      >
-        {t("heatmapTitle")}
-      </Typography>
-
       <Box
         role="img"
         aria-label={t("heatmapAria")}
@@ -183,6 +130,20 @@ export default function WritingActivityHeatmapSlide({
           overflow: "hidden"
         }}
       >
+        <Typography
+          sx={{
+            mb: { xs: 0.75, sm: 1 },
+            px: 0.5,
+            fontSize: { xs: "0.58rem", sm: "0.64rem" },
+            color: TEXT_MUTED,
+            textAlign: "center",
+            lineHeight: 1.4,
+            fontWeight: 500,
+            flexShrink: 0
+          }}
+        >
+          {t("heatmapHoursFootnote")}
+        </Typography>
         <Box
           sx={{
             display: "grid",
@@ -272,56 +233,6 @@ export default function WritingActivityHeatmapSlide({
             );
           })}
         </Box>
-        <Typography
-          sx={{
-            mt: { xs: 0.75, sm: 1 },
-            px: 0.5,
-            fontSize: { xs: "0.58rem", sm: "0.64rem" },
-            color: TEXT_MUTED,
-            textAlign: "center",
-            lineHeight: 1.4,
-            fontWeight: 500,
-            flexShrink: 0
-          }}
-        >
-          {t("heatmapHoursFootnote")}
-        </Typography>
-      </Box>
-
-      <Box
-        sx={{
-          ...feedbackPlotPanelOnSurfaceSx,
-          mt: 0,
-          px: { xs: 1.15, sm: 1.5 },
-          py: { xs: 1.15, sm: 1.35 },
-          textAlign: "center",
-          flexShrink: 0
-        }}
-      >
-        <Typography
-          component="p"
-          sx={{
-            color: TEXT_MAIN,
-            fontWeight: 600,
-            fontSize: { xs: "0.76rem", sm: "0.84rem" },
-            lineHeight: 1.45,
-            mb: 0.75
-          }}
-        >
-          {t("heatmapConsistency", { activeDays, totalDays, percent: activityPercentage })}
-        </Typography>
-        <Typography
-          component="p"
-          sx={{
-            color: TEXT_MAIN,
-            fontWeight: 600,
-            fontSize: { xs: "0.76rem", sm: "0.84rem" },
-            lineHeight: 1.45,
-            m: 0
-          }}
-        >
-          {peak ? t("heatmapPeakDay", { date: peak.dateLabel, words: wordsFmt }) : t("heatmapPeakDayNone")}
-        </Typography>
       </Box>
     </Box>
   );

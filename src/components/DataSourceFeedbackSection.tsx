@@ -10,7 +10,6 @@ import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
-import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -33,7 +32,6 @@ import {
 import { DataSourceValue } from "@models/processed";
 import { GraphData } from "@models/graphData";
 import GeneralInfoCarousel from "@components/charts/GeneralInfoCarousel";
-import ChatSummaryCarousel from "@components/charts/ChatSummaryCarousel";
 import ComparisonCarousel from "@components/charts/ComparisonCarousel";
 import ChatActivitySection from "@components/charts/ChatActivitySection";
 import LifeEventActivitySection from "@components/charts/LifeEventActivitySection";
@@ -55,7 +53,6 @@ export default function DataSourceFeedbackSection({
   const showMessageComposition = showDetailedAudioFeedback || !!graphData.emojiDistribution;
   console.log("DataSourceFeedbackSection graphData", graphData);
   const t = useTranslations("feedback");
-  const ii = useTranslations("feedback.interactionIntensity");
   const socialT = useTranslations("feedback.socialContent");
 
   const [modalContent, setModalContent] = useState<{ title: string; contentHtml: string; imageSrc?: string } | null>(null);
@@ -205,89 +202,6 @@ export default function DataSourceFeedbackSection({
               </Box>
             </Box>
           )}
-
-          <Box sx={feedbackChartPaletteOuterSx}>
-            <Box aria-hidden sx={{ display: "flex", height: 4, width: "100%" }}>
-              <Box sx={{ flex: 1, bgcolor: FEEDBACK_SECTION_CHART_SENT }} />
-              <Box sx={{ flex: 1, bgcolor: FEEDBACK_SECTION_CHART_RECEIVED }} />
-            </Box>
-            <Box sx={feedbackChartPaletteHeaderStripSx}>
-              <Stack direction="row" spacing={1.25} alignItems="center" justifyContent="center" sx={{ mb: 1 }}>
-                <Box sx={feedbackChartPaletteIconBoxSx}>
-                  <HubOutlinedIcon sx={{ fontSize: 26, color: FEEDBACK_SECTION_CHART_SENT }} />
-                </Box>
-                <Box sx={{ textAlign: "left" }}>
-                  <Typography
-                    variant="overline"
-                    sx={{
-                      display: "block",
-                      letterSpacing: "0.2em",
-                      fontWeight: 700,
-                      fontSize: "0.65rem",
-                      color: FEEDBACK_SECTION_CHART_SENT
-                    }}
-                  >
-                    {ii("cardOverline")}
-                  </Typography>
-                  <Typography
-                    variant="h3"
-                    component="h2"
-                    sx={{
-                      fontWeight: 800,
-                      letterSpacing: "-0.03em",
-                      color: TEXT_MAIN,
-                      fontSize: { xs: "1.45rem", sm: "1.85rem" },
-                      lineHeight: 1.2
-                    }}
-                  >
-                    {ii("title")}
-                  </Typography>
-                </Box>
-              </Stack>
-              <Typography variant="body2" sx={{ textAlign: "center", color: TEXT_MUTED, maxWidth: 480, mx: "auto", lineHeight: 1.55 }}>
-                {ii("cardIntro")}
-              </Typography>
-            </Box>
-
-            <Box sx={feedbackSectionBodySx}>
-              <Stack
-                spacing={3}
-                divider={
-                  showDetailedAudioFeedback ? (
-                    <Divider flexItem sx={{ borderColor: alpha(FEEDBACK_SECTION_CHART_RECEIVED, 0.22) }} />
-                  ) : undefined
-                }
-                sx={{ width: "100%" }}
-              >
-                <Box sx={{ ...feedbackPlotPanelSx, display: "flex", flexDirection: "column", alignItems: "stretch" }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, textAlign: "center", color: TEXT_MAIN }}>
-                    {ii("animatedIntensityPolarChart.title")}
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 2, textAlign: "center", color: TEXT_MAIN, px: { xs: 0, sm: 1 } }}>
-                    {ii.rich("animatedIntensityPolarChart.description", {
-                      button: label => openModalSpan(label, ii, "animatedIntensityPolarChart", FEEDBACK_SECTION_CHART_SENT)
-                    })}
-                  </Typography>
-                  <ChartContainer type={ChartType.AnimatedIntensityPolarChart} data={graphData} dataSourceValue={dataSourceValue} />
-                </Box>
-                {showDetailedAudioFeedback && (
-                  <Box sx={{ ...feedbackPlotPanelSx, display: "flex", flexDirection: "column", alignItems: "stretch" }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, textAlign: "center", color: TEXT_MAIN }}>
-                      {ii("animatedSecondsPerChatBarChart.title")}
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 2, textAlign: "center", color: TEXT_MAIN, px: { xs: 0, sm: 1 } }}>
-                      {ii.rich("animatedSecondsPerChatBarChart.description", {
-                        button: label => openModalSpan(label, ii, "animatedSecondsPerChatBarChart", FEEDBACK_SECTION_CHART_SENT)
-                      })}
-                    </Typography>
-                    <ChartContainer type={ChartType.AnimatedSecondsPerChatBarChart} data={graphData} dataSourceValue={dataSourceValue} />
-                  </Box>
-                )}
-              </Stack>
-            </Box>
-          </Box>
-
-          <ChatSummaryCarousel data={graphData} />
 
           <ChatActivitySection graphData={graphData} />
 

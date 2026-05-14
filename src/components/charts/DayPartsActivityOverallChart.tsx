@@ -2,8 +2,9 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
-import React from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Bar } from "react-chartjs-2";
+import type { Chart } from "chart.js";
 
 import { BARCHART_OPTIONS, CHART_LAYOUT, PCT_TOOLTIP, TOP_LEGEND } from "@components/charts/chartConfig";
 import {
@@ -38,7 +39,20 @@ const DayPartsActivityOverallChart: React.FC<DayPartsActivityOverallPlotProps> =
 
   const chartTexts = useTranslations("feedback.dailyActivityTimes.dayPartsOverall");
 
-  const buckets = ["00:00-05:59", "06:00-11:59", "12:00-17:59", "18:00-23:59"];
+  /** Full ranges (tooltips / non-compact); compact uses short labels so ticks fit under bars. */
+  const bucketFull = ["00:00–05:59", "06:00–11:59", "12:00–17:59", "18:00–23:59"];
+  const bucketShort = ["0–6h", "6–12h", "12–18h", "18–24h"];
+  const xLabels = compact ? bucketShort : bucketFull;
+  const [footerAlign, setFooterAlign] = useState<{ left: number; width: number } | null>(null);
+
+  const syncFooterToChartArea = useCallback((chart: Chart) => {
+    const ca = chart?.chartArea;
+    if (!ca || ca.width <= 0) return;
+    const left = Math.round(ca.left);
+    const width = Math.round(ca.width);
+    setFooterAlign(prev => (prev?.left === left && prev?.width === width ? prev : { left, width }));
+  }, []);
+
   const sentCounts = [0, 0, 0, 0];
   const receivedCounts = [0, 0, 0, 0];
 
@@ -59,7 +73,7 @@ const DayPartsActivityOverallChart: React.FC<DayPartsActivityOverallPlotProps> =
   const maxBarThickness = compact ? 52 : CHART_LAYOUT.maxBarThickness;
 
   const chartData = {
-    labels: buckets,
+    labels: xLabels,
     datasets: [
       {
         label: chartTexts("legend.received"),
@@ -84,76 +98,98 @@ const DayPartsActivityOverallChart: React.FC<DayPartsActivityOverallPlotProps> =
     ]
   };
 
-  const options = {
-    ...BARCHART_OPTIONS,
-    layout: {
-      padding: compact ? { left: 4, right: 4, top: 2, bottom: 0 } : { left: 8, right: 8, top: 8, bottom: 2 }
-    },
-    plugins: {
-      legend: {
-        ...TOP_LEGEND,
-        labels: {
-          ...TOP_LEGEND.labels,
-          boxWidth: compact ? 10 : 14,
-          padding: compact ? 6 : 10,
-          color: TEXT_MAIN,
-          font: { size: compact ? 9 : 11, weight: "600" },
-          usePointStyle: true,
-          pointStyle: "rectRounded"
+  const yAxisTitle = chartTexts("yAxis");
+
+  const options = useMemo(
+    () => ({
+      ...BARCHART_OPTIONS,
+      layout: {
+        padding: compact ? { left: 2, right: 6, top: 2, bottom: 18 } : { left: 8, right: 8, top: 8, bottom: 20 }
+      },
+      onResize: (chart: Chart) => syncFooterToChartArea(chart),
+      animation: {
+        ...BARCHART_OPTIONS.animation,
+        onComplete: (animation: { chart: Chart }) => syncFooterToChartArea(animation.chart)
+      },
+      plugins: {
+        legend: {
+          ...TOP_LEGEND,
+          labels: {
+            ...TOP_LEGEND.labels,
+            boxWidth: compact ? 10 : 14,
+            padding: compact ? 6 : 10,
+            color: TEXT_MAIN,
+            font: { size: compact ? 9 : 11, weight: "600" as const },
+            usePointStyle: true,
+            pointStyle: "rectRounded" as const
+          }
+        },
+        tooltip: {
+          ...PCT_TOOLTIP,
+          backgroundColor: alpha(TEXT_MAIN, 0.92),
+          titleColor: "#f8fafc",
+          bodyColor: "#f8fafc",
+          borderColor: alpha("#ffffff", 0.12),
+          borderWidth: 1,
+          padding: 12,
+          cornerRadius: 8,
+          displayColors: true,
+          boxPadding: 6,
+          callbacks: {
+            ...PCT_TOOLTIP.callbacks,
+            title: (items: { dataIndex: number }[]) => {
+              const idx = items[0]?.dataIndex;
+              return idx !== undefined ? bucketFull[idx] : "";
+            }
+          }
         }
       },
-      tooltip: {
-        ...PCT_TOOLTIP,
-        backgroundColor: alpha(TEXT_MAIN, 0.92),
-        titleColor: "#f8fafc",
-        bodyColor: "#f8fafc",
-        borderColor: alpha("#ffffff", 0.12),
-        borderWidth: 1,
-        padding: 12,
-        cornerRadius: 8,
-        displayColors: true,
-        boxPadding: 6
+      scales: {
+        x: {
+          ...BARCHART_OPTIONS.scales.x,
+          stacked: true,
+          ticks: {
+            ...BARCHART_OPTIONS.scales.x.ticks,
+            display: true,
+            maxRotation: 0,
+            minRotation: 0,
+            autoSkip: false,
+            color: TEXT_MUTED,
+            font: { size: compact ? 9 : 11, weight: "normal" },
+            padding: compact ? 6 : 8
+          },
+          grid: {
+            display: false,
+            drawOnChartArea: false,
+            drawBorder: false
+          },
+          border: { display: false },
+          title: { display: false }
+        },
+        y: {
+          ...BARCHART_OPTIONS.scales.y,
+          stacked: true,
+          title: {
+            display: !compact,
+            text: yAxisTitle,
+            color: TEXT_MUTED,
+            font: { size: compact ? 9 : 11, weight: "600" }
+          },
+          ticks: {
+            ...BARCHART_OPTIONS.scales.y.ticks,
+            color: TEXT_MUTED,
+            font: { size: compact ? 9 : 11 }
+          },
+          grid: {
+            color: alpha(TEXT_MAIN, 0.06),
+            drawBorder: false
+          },
+          border: { display: false }
+        }
       }
-    },
-    scales: {
-      x: {
-        ...BARCHART_OPTIONS.scales.x,
-        stacked: true,
-        ticks: {
-          ...BARCHART_OPTIONS.scales.x.ticks,
-          display: false,
-          color: TEXT_MUTED
-        },
-        grid: {
-          display: false,
-          drawOnChartArea: false,
-          drawBorder: false
-        },
-        border: { display: false },
-        title: { display: false }
-      },
-      y: {
-        ...BARCHART_OPTIONS.scales.y,
-        stacked: true,
-        title: {
-          display: true,
-          text: chartTexts("yAxis"),
-          color: TEXT_MUTED,
-          font: { size: compact ? 9 : 11, weight: "600" }
-        },
-        ticks: {
-          ...BARCHART_OPTIONS.scales.y.ticks,
-          color: TEXT_MUTED,
-          font: { size: compact ? 9 : 11 }
-        },
-        grid: {
-          color: alpha(TEXT_MAIN, 0.06),
-          drawBorder: false
-        },
-        border: { display: false }
-      }
-    }
-  };
+    }),
+    [compact, syncFooterToChartArea, yAxisTitle]
+  );
 
   const chartPlotHeight = compact ? undefined : CHART_LAYOUT.responsiveChartHeight;
 
@@ -193,7 +229,7 @@ const DayPartsActivityOverallChart: React.FC<DayPartsActivityOverallPlotProps> =
           letterSpacing: compact ? "0.14em" : "0.2em",
           fontSize: compact ? "0.55rem" : "0.65rem",
           mb: compact ? { xs: 0.35, sm: 0.5 } : { xs: 1, sm: 1.25 },
-          px: compact ? 3 : 0,
+          px: compact ? 1 : 0,
           ...(compact && { flexShrink: 0 })
         }}
       >
@@ -218,7 +254,7 @@ const DayPartsActivityOverallChart: React.FC<DayPartsActivityOverallPlotProps> =
       <Box
         sx={{
           mt: compact ? { xs: 0, sm: 0.125 } : { xs: 0.5, sm: 0.75 },
-          pt: compact ? { xs: 0.5, sm: 0.65 } : { xs: 1.25, sm: 1.5 },
+          pt: compact ? { xs: 0.25, sm: 0.35 } : { xs: 1.25, sm: 1.5 },
           px: compact ? 0 : { xs: 0, sm: 0.25 },
           borderTop: `1px solid ${alpha(TEXT_MAIN, 0.08)}`,
           ...(compact && { flexShrink: 0 })
@@ -226,56 +262,54 @@ const DayPartsActivityOverallChart: React.FC<DayPartsActivityOverallPlotProps> =
       >
         <Box
           sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-            columnGap: compact ? { xs: 0.35, sm: 0.5 } : { xs: 0.75, sm: 1.25 },
-            rowGap: compact ? { xs: 0.35, sm: 0.45 } : { xs: 1, sm: 1.25 },
-            alignItems: "start"
+            ...(footerAlign
+              ? {
+                  width: `${footerAlign.width}px`,
+                  maxWidth: "100%",
+                  ml: `${footerAlign.left}px`,
+                  boxSizing: "border-box"
+                }
+              : { width: "100%" })
           }}
         >
-          {BUCKET_STORY_KEYS.map((key, i) => (
-            <Box
-              key={key}
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                textAlign: "center",
-                gap: compact ? { xs: 0.2, sm: 0.25 } : { xs: 0.5, sm: 0.65 },
-                minWidth: 0
-              }}
-            >
-              <Typography
-                component="span"
-                variant="body2"
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              columnGap: compact ? { xs: 0.35, sm: 0.5 } : { xs: 0.75, sm: 1.25 },
+              rowGap: compact ? { xs: 0.15, sm: 0.2 } : { xs: 1, sm: 1.25 },
+              alignItems: "start"
+            }}
+          >
+            {BUCKET_STORY_KEYS.map(key => (
+              <Box
+                key={key}
                 sx={{
-                  color: TEXT_MAIN,
-                  fontWeight: 700,
-                  fontSize: compact ? { xs: "0.58rem", sm: "0.62rem" } : { xs: "0.72rem", sm: "0.8rem" },
-                  lineHeight: compact ? 1.25 : 1.35,
-                  letterSpacing: "-0.01em",
-                  fontFeatureSettings: '"tnum"'
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textAlign: "center",
+                  minWidth: 0
                 }}
               >
-                {buckets[i].replace(/-/g, "–")}
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  width: "100%",
-                  maxWidth: { xs: "100%", sm: compact ? 88 : 120 },
-                  color: TEXT_MUTED,
-                  fontWeight: 500,
-                  lineHeight: compact ? 1.28 : 1.45,
-                  fontSize: compact ? { xs: "0.52rem", sm: "0.56rem" } : { xs: "0.65rem", sm: "0.72rem" },
-                  wordBreak: "break-word",
-                  display: "block"
-                }}
-              >
-                {chartTexts(key)}
-              </Typography>
-            </Box>
-          ))}
+                <Typography
+                  variant="caption"
+                  sx={{
+                    width: "100%",
+                    color: TEXT_MAIN,
+                    fontWeight: 700,
+                    lineHeight: compact ? 1.28 : 1.45,
+                    fontSize: compact ? { xs: "0.5rem", sm: "0.54rem" } : { xs: "0.65rem", sm: "0.72rem" },
+                    wordBreak: "break-word",
+                    display: "block",
+                    hyphens: "auto"
+                  }}
+                >
+                  {chartTexts(key)}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
         </Box>
       </Box>
     </Box>

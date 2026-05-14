@@ -447,7 +447,7 @@
     },
     "generalInfoCarousel": {
       "introTitle": "General information",
-      "introSubtitle": "Swipe through your message totals, word highlights, and when you tend to write the most.",
+      "introSubtitle": "Swipe through your message totals and word highlights.",
       "wordsBookHeading": "If your chats were a book …",
       "wordsBookLine1a": "They would contain ",
       "wordsBookLine1b": " words, roughly ",
@@ -462,7 +462,6 @@
       "wordsBookImpressiveFellowship": "Impressive! Trilogy it is!",
       "wordsBookDecorAriaHobbit": "Decorative open book: ruled page and Hobbit title with mountain sketch.",
       "wordsBookDecorAriaFellowship": "Decorative open book: ruled page, Fellowship title, and golden ring.",
-      "heatmapTitle": "Check out when you write the most",
       "heatmapAria": "Heatmap of sent words by weekday and time of day. Rows use 24-hour local time ranges.",
       "heatmapHoursFootnote": "Times are 24-hour clock, based on each message timestamp.",
       "heatmapBandEarlyMorn": "Early morning\n0:00–5:59",
@@ -477,12 +476,12 @@
     "lifeEventActivity": {
       "cardOverline": "Your data",
       "title": "Did any life event change your activity?",
-      "intro": "Set an event date and comparison window below. The first chart shows your overall daily word trends; the summary cards and timeline focus on activity before and after that date."
+      "intro": "Optional: set an event date below to compare before and after; leave blank for your full history."
     },
     "comparisonCarousel": {
       "cardOverline": "Your data",
       "introTitle": "Your texting activity",
-      "introSubtitle": "Swipe through who gets your words, sent vs. received, and when you are most active.",
+      "introSubtitle": "Swipe through who gets your words, sent vs. received, when you are most active by time of day, and when you tend to write the most (weekday × time heatmap).",
       "mostWordsTitle": "Who do you send the most words to?",
       "sentReceivedTitle": "Do you send more words than you receive?",
       "dayPartsTitle": "When are you the most active?",
@@ -521,12 +520,17 @@
     },
     "chatActivity": {
       "cardOverline": "Your data",
-      "cardIntro": "See who you message most and how quickly you reply across your chats.",
       "title": "Your activity in different chats",
       "topContactsTitle": "Who are your Top 3 contacts?",
       "topContactsFootnote": "This shows the total messages you sent in these chats.",
       "replyRaceTitle": "In which chat do you reply the fastest?",
-      "replyRaceSubtitle": "If this was a race, {winner} would be the winner!"
+      "replyRaceSubtitle": "If this was a race, {winner} would be the winner!",
+      "summariesConversationLabel": "Conversation",
+      "summariesSlideTitle": "Chat summaries",
+      "summariesSlideIntro": "Pick a chat to see messages sent, quick replies, and your longest streak there.",
+      "summariesStatMessagesWords": "You sent {messages} messages and {words} words in this chat.",
+      "summariesStatQuickReply": "{percent}% of your replies were in less than a minute.",
+      "summariesStatStreak": "You had a {days} day texting streak."
     },
     "statisticsCard": {
       "title": "Overview of all Activity",
